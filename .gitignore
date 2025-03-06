@@ -1,0 +1,41 @@
+# Виртуальное окружение
+venv/
+env/
+.venv/
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+
+# Файлы IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Логи и данные
+*.log
+*.csv
+*.npz
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# Файлы конфигурации с секретами
+config.py
+.env
+.secrets
+
+# Кэш pytest
+.pytest_cache/
+
+# Статические файлы и медиа (если они генерируются динамически)
+app/static/uploads/
+app/static/media/
+
+# Системные файлы
+.DS_Store
+Thumbs.db
