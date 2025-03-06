@@ -1,0 +1,10 @@
+Flask==2.3.3
+Jinja2==3.1.2
+matplotlib==3.9.2
+matrixprofile-ts==0.0.9
+numba==0.61.0
+numpy==2.1.2
+pandas==2.2.3
+plotly==6.0.0
+requests==2.32.3
+stumpy==1.13.0
