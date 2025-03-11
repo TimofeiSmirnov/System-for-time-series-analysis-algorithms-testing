@@ -55,7 +55,11 @@ def generate_timestamps(n):
     return np.arange(n).astype(np.float64)
 
 
-def load_time_series(n):
+def load_time_series(n, k):
     """Сейчас генерирует случайный ряд, но скоро можно будет его загружать из базы"""
-    values = generate_ts_data(length=n, avg_pattern_length=20, default_variance=2)
+    values = []
+
+    for i in range(k):
+        values.append(generate_ts_data(length=n, avg_pattern_length=20, default_variance=2))
+
     return generate_timestamps(n), values
