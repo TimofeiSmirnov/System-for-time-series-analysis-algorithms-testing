@@ -55,7 +55,7 @@ def generate_timestamps(n):
     return np.arange(n).astype(np.float64)
 
 
-def load_time_series(n, k):
+def generate_time_series(n, k):
     """Сейчас генерирует случайный ряд, но скоро можно будет его загружать из базы"""
     values = []
 

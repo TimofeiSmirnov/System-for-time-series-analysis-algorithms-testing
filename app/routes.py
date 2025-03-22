@@ -1,50 +1,178 @@
+import os
 from flask import Flask, render_template, request
-
-from app.utils.data_loader import load_time_series
-from app.utils.mp_calculator import generate_mp
-from app.utils.visualization import visualize_time_series
+from app.algorithms.apply_algorithms import apply_algorithm
+from app.algorithms.multidim_ad.multidimensional_ad import multidimensional_ad
+from app.data_controller.data_controller import DataController
+from app.utils.mp_calculator import generate_mp, arc_curve_calculator
+from app.utils.visualization import visualize_time_series_with_matrix_profile, visualize_time_series_ad, visualize_time_series_with_fluss
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+UPLOAD_FOLDER = os.path.join(os.getcwd(), 'app', 'data', 'userTS')
 
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    """Главная страница с возможностью выборов параметра ряда для генерации"""
+    """Главная страница с возможностью выбора ряда и генерации матричного профиля по нему"""
     plot_html = None
+    data_controller = DataController()
+    available_series = data_controller.get_available_series()
+    timestamps = []
+    time_series = []
+    matrix_profile_algorithm = "stomp"
+    window_length = 1
+    matrix_profile = []
+    execution_time = 999
+    time_series_length = 0
+    time_series_dim = 0
+
     if request.method == "POST":
-        time_series_length = int(request.form['n'])
-        try:
-            time_series_dim = int(request.form['k'])
-        except KeyError:
+        if 'n' in request.form and 'k' in request.form:
+            time_series_length = int(request.form["n"])
+            time_series_dim = int(request.form["k"])
+
+            timestamps, time_series = data_controller.generate_series(time_series_length, time_series_dim)
+
+            if "algorithm_for_gen" in request.form and "m_for_gen" in request.form:
+                matrix_profile_algorithm = request.form["algorithm_for_gen"]
+                window_length = int(request.form["m_for_gen"])
+
+                matrix_profile, execution_time = generate_mp(matrix_profile_algorithm, time_series, window_length)
+        elif 'series' in request.form:
+            requested_time_series_to_load = request.form["series"]
+            timestamps, time_series = data_controller.get_series(requested_time_series_to_load)
+            time_series_length = len(time_series)
             time_series_dim = 1
-        window_length = int(request.form['m'])
-        algorithms = request.form.getlist('algorithm')
-        task = request.form['task']
-        timestamps, time_series = load_time_series(time_series_length, time_series_dim)
+            if "algorithm_for_choose" in request.form and "m_for_choose" in request.form:
+                matrix_profile_algorithm = request.form["algorithm_for_choose"]
+                window_length = int(request.form["m_for_choose"])
 
-        array_of_mp = []
-        print(algorithms)
-        for algorithm in algorithms:
-            mp, execution_time = generate_mp(algorithm, time_series, window_length)
-            for matrix_profile in mp:
-                array_of_mp.append(matrix_profile)
-            print(algorithm + ": ", execution_time)
-        plot_html = visualize_time_series(timestamps, time_series, array_of_mp)
+                matrix_profile, execution_time = generate_mp(matrix_profile_algorithm, time_series, window_length)
+        elif 'file' in request.files:
+            uploaded_file = request.files['file']
 
-    return render_template("index.html", plot_html=plot_html)
+            if uploaded_file:
+                filename = secure_filename(uploaded_file.filename)
+                file_path = os.path.join(UPLOAD_FOLDER, filename)
+
+                if not os.path.exists(UPLOAD_FOLDER):
+                    os.makedirs(UPLOAD_FOLDER)
+
+                uploaded_file.save(file_path)
+
+                timestamps, time_series = data_controller.get_series(filename)
+                time_series_length = len(time_series)
+                time_series_dim = 1
+
+            if "algorithm_for_load" in request.form and "m_for_load" in request.form:
+                matrix_profile_algorithm = request.form["algorithm_for_load"]
+                window_length = int(request.form["m_for_load"])
+
+                matrix_profile, execution_time = generate_mp(matrix_profile_algorithm, time_series, window_length)
+
+        plot_html = visualize_time_series_with_matrix_profile(timestamps, time_series, matrix_profile)
+        return render_template("index.html", plot_html=plot_html, available_series=available_series)
+
+    return render_template("index.html", plot_html=plot_html, available_series=available_series)
 
 
 @app.route("/ad_analysis", methods=["GET", "POST"])
 def ad_analysis():
     """Страница для анализа алгоритмов Anomaly Detection (AD)"""
     plot_html = None
+    data_controller = DataController()
+    available_series = data_controller.get_available_series()
+    timestamps = []
+    time_series = []
+    matrix_profile_algorithm = "stomp"
+    threshold = 95.0
+    matrix_profile = []
+    execution_time = 999
+    anomaly_indexes = []
+    matrix_profile_for_multidimensional_ts = []
 
-    return render_template("ad_analysis.html", plot_html=plot_html)
+    if request.method == "POST":
+        if 'n' in request.form and 'k' in request.form:
+            time_series_length = int(request.form["n"])
+            time_series_dim = int(request.form["k"])
+
+            timestamps, time_series = data_controller.generate_series(time_series_length, time_series_dim)
+
+            if "algorithm_for_gen" in request.form and "threshold_for_gen" in request.form:
+                matrix_profile_algorithm = request.form["algorithm_for_gen"]
+                threshold = float(request.form["threshold_for_gen"])
+                # matrix_profile_for_multidimensional_ts = multidimensional_ad(time_series, 50)
+                anomaly_indexes = apply_algorithm(matrix_profile_algorithm, time_series[0], threshold)
+        elif 'series' in request.form:
+            requested_time_series_to_load = request.form["series"]
+            timestamps, time_series = data_controller.get_series(requested_time_series_to_load)
+
+            if "algorithm_for_choose" in request.form and "threshold_for_choose" in request.form:
+                matrix_profile_algorithm = request.form["algorithm_for_choose"]
+                threshold = float(request.form["threshold_for_choose"])
+                anomaly_indexes = apply_algorithm(matrix_profile_algorithm, time_series[0], threshold)
+        elif 'file' in request.files:
+            uploaded_file = request.files['file']
+
+            if uploaded_file:
+                filename = secure_filename(uploaded_file.filename)
+                file_path = os.path.join(UPLOAD_FOLDER, filename)
+
+                if not os.path.exists(UPLOAD_FOLDER):
+                    os.makedirs(UPLOAD_FOLDER)
+
+                uploaded_file.save(file_path)
+
+                timestamps, time_series = data_controller.get_series(filename)
+
+            if "algorithm_for_load" in request.form and "threshold_for_load" in request.form:
+                matrix_profile_algorithm = request.form["algorithm_for_load"]
+                threshold = float(request.form["threshold_for_load"])
+
+                anomaly_indexes = apply_algorithm(matrix_profile_algorithm, time_series[0], threshold)
+
+        plot_html = visualize_time_series_with_matrix_profile(timestamps, time_series[0], matrix_profile_for_multidimensional_ts)
+        return render_template("ad_analysis.html", plot_html=plot_html, available_series=available_series)
+
+    return render_template("ad_analysis.html", plot_html=plot_html, available_series=available_series)
 
 
 @app.route("/cpd_analysis", methods=["GET", "POST"])
 def cpd_analysis():
     """Страница для анализа алгоритмов Change Point Detection (CPD)"""
     plot_html = None
+    data_controller = DataController()
+    available_series = data_controller.get_available_series()
+    timestamps = []
+    time_series = []
+    number_of_regimes = 2
+    window_size = 100
 
-    return render_template("cpd_analysis.html", plot_html=plot_html)
+    if request.method == "POST":
+        if 'n' in request.form and 'k' in request.form:
+            time_series_length = int(request.form["n"])
+            time_series_dim = int(request.form["k"])
+            window_size = int(request.form["m_gen"])
+            timestamps, time_series = data_controller.generate_series(time_series_length, time_series_dim)
+        elif 'series' in request.form:
+            requested_time_series_to_load = request.form["series"]
+            window_size = int(request.form["m_choose"])
+            timestamps, time_series = data_controller.get_series(requested_time_series_to_load)
+        elif 'file' in request.files:
+            uploaded_file = request.files['file']
+            window_size = int(request.form["m_load"])
+            if uploaded_file:
+                filename = secure_filename(uploaded_file.filename)
+                file_path = os.path.join(UPLOAD_FOLDER, filename)
+
+                if not os.path.exists(UPLOAD_FOLDER):
+                    os.makedirs(UPLOAD_FOLDER)
+
+                uploaded_file.save(file_path)
+                timestamps, time_series = data_controller.get_series(filename)
+
+        arc_curve = arc_curve_calculator(time_series[0], window_size, number_of_regimes)
+        plot_html = visualize_time_series_with_fluss(timestamps, time_series, arc_curve)
+        return render_template("cpd_analysis.html", plot_html=plot_html, available_series=available_series)
+
+    return render_template("cpd_analysis.html", plot_html=plot_html, available_series=available_series)
