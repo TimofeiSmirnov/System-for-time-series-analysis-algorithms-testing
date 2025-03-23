@@ -1,94 +1,57 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Series Testing System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <script>
-        function toggleForms(selectedOption) {
-            document.getElementById("generateForm").style.display = selectedOption === "generate" ? "block" : "none";
-            document.getElementById("selectForm").style.display = selectedOption === "select" ? "block" : "none";
-            document.getElementById("uploadForm").style.display = selectedOption === "upload" ? "block" : "none";
-        }
-    </script>
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">Time Series Testing</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{{ url_for('index') }}">Алгоритмы вычисления матричного профиля</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('ad_analysis') }}">Анализ алгоритмов для AD</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" aria-current="page" href="{{ url_for('cpd_analysis') }}">Анализ алгоритмов для CPD</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+{% extends "base.html" %}
 
-    <div class="container mt-4">
-        <h2>Сегментация ряда с помощью матричного профиля:</h2>
-        <select class="form-select" onchange="toggleForms(this.value)">
-            <option value="">Выберите действие</option>
-            <option value="generate">Сгенерировать временной ряд</option>
-            <option value="select">Выбрать из существующих</option>
-            <option value="upload">Загрузить CSV-файл</option>
+{% block title %}Анализ алгоритмов для CPD{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Сегментация ряда с помощью матричного профиля:</h2>
+    <select class="form-select" onchange="toggleForms(this.value)">
+        <option value="">Выберите действие</option>
+        <option value="generate">Сгенерировать временной ряд</option>
+        <option value="select">Выбрать из существующих</option>
+        <option value="upload">Загрузить CSV-файл</option>
+    </select>
+
+    <form id="generateForm" method="post" onsubmit="generateSeries(event)" style="display: none;" class="mt-3">
+        <h3>Генерация временного ряда</h3>
+        <label for="n">Длина ряда:</label>
+        <input type="number" name="n" id="n" class="form-control" value="300" min="100" max="1000000" required>
+        <label for="k">Размерность:</label>
+        <input type="number" name="k" id="k" class="form-control" value="1" min="1" max="100" required>
+        <label for="m_gen">Ширина окна матричного профиля:</label>
+        <input type="number" name="m_gen" id="m_gen" class="form-control" value="1" min="2" max="100000" required>
+        <button type="submit" class="btn btn-primary mt-2">Сгенерировать</button>
+    </form>
+
+    <form id="selectForm" method="post" style="display: none;" class="mt-3">
+        <h3>Выбор временного ряда</h3>
+        <label for="series">Доступные ряды:</label>
+        <select name="series" id="series" class="form-select">
+            {% for file_name, meta in available_series.items() %}
+                <option value="{{ file_name }}">
+                    {{ file_name }} ({{ meta["length"] }} * {{ meta["dimensions"] }})
+                </option>
+            {% endfor %}
         </select>
+        <label for="m_choose">Ширина окна матричного профиля:</label>
+        <input type="number" name="m_choose" id="m_choose" class="form-control" value="1" min="2" max="100000" required>
+        <button type="submit" class="btn btn-primary mt-2">Выбрать</button>
+    </form>
 
-        <form id="generateForm" method="post" onsubmit="generateSeries(event)" style="display: none;" class="mt-3">
-            <h3>Генерация временного ряда</h3>
-            <label for="n">Длина ряда:</label>
-            <input type="number" name="n" id="n" class="form-control" value="300" min="100" max="1000000" required>
-            <label for="k">Размерность:</label>
-            <input type="number" name="k" id="k" class="form-control" value="1" min="1" max="100" required>
-            <label for="m_gen">Ширина окна матричного профиля:</label>
-            <input type="number" name="m_gen" id="m_gen" class="form-control" value="1" min="2" max="100000" required>
-            <button type="submit" class="btn btn-primary mt-2">Сгенерировать</button>
-        </form>
+    <form id="uploadForm" method="post" enctype="multipart/form-data" style="display: none;" class="mt-3">
+        <h3>Загрузка временного ряда</h3>
+        <label for="file">Выберите CSV-файл:</label>
+        <input type="file" name="file" id="file" class="form-control" accept=".csv" required>
+        <label for="m_load">Ширина окна матричного профиля:</label>
+        <input type="number" name="m_load" id="m_load" class="form-control" value="1" min="2" max="100000" required>
+        <button type="submit" class="btn btn-primary mt-2">Загрузить</button>
+    </form>
 
-        <form id="selectForm" method="post" style="display: none;" class="mt-3">
-            <h3>Выбор временного ряда</h3>
-            <label for="series">Доступные ряды:</label>
-            <select name="series" id="series" class="form-select">
-                {% for file_name, meta in available_series.items() %}
-                    <option value="{{ file_name }}">
-                        {{ file_name }} ({{ meta["length"] }} * {{ meta["dimensions"] }})
-                    </option>
-                {% endfor %}
-            </select>
-            <label for="m_choose">Ширина окна матричного профиля:</label>
-            <input type="number" name="m_choose" id="m_choose" class="form-control" value="1" min="2" max="100000" required>
-            <button type="submit" class="btn btn-primary mt-2">Выбрать</button>
-        </form>
+    <div id="plotContainer" class="mt-4"></div>
 
-        <form id="uploadForm" method="post" enctype="multipart/form-data" style="display: none;" class="mt-3">
-            <h3>Загрузка временного ряда</h3>
-            <label for="file">Выберите CSV-файл:</label>
-            <input type="file" name="file" id="file" class="form-control" accept=".csv" required>
-            <label for="m_load">Ширина окна матричного профиля:</label>
-            <input type="number" name="m_load" id="m_load" class="form-control" value="1" min="2" max="100000" required>
-            <button type="submit" class="btn btn-primary mt-2">Загрузить</button>
-        </form>
-
-        <div id="plotContainer" class="mt-4"></div>
-
-        <section class="mt-4">
-            <h2>Временной ряд с полученными аномалиями:</h2>
-            <div id="plot" class="mb-4">{{ plot_html|safe }}</div>
-        </section>
-
-    </div>
-</body>
-</html>
+    <section class="mt-4">
+        <h2>Временной ряд с полученными аномалиями:</h2>
+        <div id="plot" class="mb-4">{{ plot_html|safe }}</div>
+    </section>
+</div>
+{% endblock %}

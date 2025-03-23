@@ -76,6 +76,68 @@ def visualize_time_series_ad(timestamps, values, ad_values):
     return fig.to_html()
 
 
+def visualize_time_series_ad_multidim(timestamps, values, ad_values, matrix_profile):
+    """Визуализирует многомерный временной ряд с аномалиями и матричные профили на отдельных графиках"""
+
+    num_dimensions = len(values)
+
+    fig = make_subplots(
+        rows=2 * num_dimensions, cols=1, shared_xaxes=True,
+        vertical_spacing=0.1,
+        subplot_titles=[f"Временной ряд {dim + 1}" for dim in range(num_dimensions)] +
+                       [f"Матричный профиль {dim + 1}" for dim in range(num_dimensions)]
+    )
+
+    for dim in range(num_dimensions):
+        series_values = values[dim]
+        anomaly_x = [timestamps[i] for i in ad_values]
+        anomaly_y = [series_values[i] for i in ad_values]
+        profile_values = matrix_profile[dim]
+
+        fig.add_trace(
+            go.Scatter(
+                x=timestamps,
+                y=series_values,
+                mode='lines',
+                line=dict(color=f'rgba(0, 0, 255, {1 - dim * 0.2})'),
+                name=f"Временной ряд {dim + 1}"
+            ),
+            row=dim * 2 + 1, col=1
+        )
+
+        fig.add_trace(
+            go.Scatter(
+                x=anomaly_x,
+                y=anomaly_y,
+                mode='markers',
+                marker=dict(color='red', size=8),
+                name=f"Аномалии {dim + 1}"
+            ),
+            row=dim * 2 + 1, col=1
+        )
+
+        fig.add_trace(
+            go.Scatter(
+                x=timestamps[:len(profile_values)],
+                y=profile_values,
+                mode='lines',
+                line=dict(color='green'),
+                name=f"Матричный профиль {dim + 1}"
+            ),
+            row=dim * 2 + 2, col=1
+        )
+
+    fig.update_layout(
+        title="Визуализация многомерного временного ряда с аномалиями и матричными профилями",
+        xaxis_title="Время",
+        yaxis_title="Значение",
+        showlegend=True,
+        height=600 * num_dimensions
+    )
+
+    return fig.to_html()
+
+
 def visualize_time_series_with_fluss(timestamps, values, values_fluss):
     """Визуализирует многомерный временной ряд и несколько арочных кривых"""
     num_dimensions = len(values)
