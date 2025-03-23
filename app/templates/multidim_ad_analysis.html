@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Анализ алгоритмов для CPD{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+        <h2>Поиск аномалий с помощью матричного профиля:</h2>
+        <select class="form-select" onchange="toggleForms(this.value)">
+            <option value="">Выберите действие</option>
+            <option value="generate">Сгенерировать временной ряд</option>
+            <option value="select">Выбрать из существующих</option>
+            <option value="upload">Загрузить CSV-файл</option>
+        </select>
+
+        <form id="generateForm" method="post" onsubmit="generateSeries(event)" style="display: none;" class="mt-3">
+            <h3>Генерация временного ряда</h3>
+            <label for="n">Длина ряда:</label>
+            <input type="number" name="n" id="n" class="form-control" value="300" min="100" max="1000000" required>
+            <label for="k">Размерность:</label>
+            <input type="number" name="k" id="k" class="form-control" value="2" min="2" max="100" required>
+
+            <label for="algorithm_for_gen" class="form-label">Алгоритм:</label>
+            <select name="algorithm_for_gen" id="algorithm_for_gen" class="form-select">
+                <option value="post_sorting">Post-sorting method</option>
+            </select>
+            <label for="threshold_for_gen" class="form-label">Перцентиль определения аномалии:</label>
+            <input type="number" name="threshold_for_gen" id="threshold_for_gen" class="form-control" value="99.5" min="0" max="100" step="0.1" required>
+
+            <button type="submit" class="btn btn-primary mt-2">Сгенерировать</button>
+        </form>
+
+        <form id="selectForm" method="post" style="display: none;" class="mt-3">
+            <h3>Выбор временного ряда</h3>
+            <label for="series">Доступные ряды:</label>
+            <select name="series" id="series" class="form-select">
+                {% for file_name, meta in available_series.items() %}
+                    <option value="{{ file_name }}">
+                        {{ file_name }} ({{ meta["length"] }} * {{ meta["dimensions"] }})
+                    </option>
+                {% endfor %}
+            </select>
+
+            <label for="algorithm_for_choose" class="form-label">Алгоритм:</label>
+            <select name="algorithm_for_choose" id="algorithm_for_choose" class="form-select">
+                <option value="post_sorting">Post-sorting method</option>
+            </select>
+            <label for="threshold_for_choose" class="form-label">Перцентиль определения аномалии:</label>
+            <input type="number" name="threshold_for_choose" id="threshold_for_choose" class="form-control" value="99.5" min="0" max="100" step="0.1" required>
+
+            <button type="submit" class="btn btn-primary mt-2">Выбрать</button>
+        </form>
+
+        <form id="uploadForm" method="post" enctype="multipart/form-data" style="display: none;" class="mt-3">
+            <h3>Загрузка временного ряда</h3>
+            <label for="file">Выберите CSV-файл:</label>
+            <input type="file" name="file" id="file" class="form-control" accept=".csv" required>
+
+            <label for="algorithm_for_load" class="form-label">Алгоритм:</label>
+            <select name="algorithm_for_load" id="algorithm_for_load" class="form-select">
+                <option value="post_sorting">Post-sorting method</option>
+            </select>
+            <label for="threshold_for_load" class="form-label">Перцентиль определения аномалии:</label>
+            <input type="number" name="threshold_for_load" id="threshold_for_load" class="form-control" value="99.5" min="0" max="100" step="0.1" required>
+
+            <button type="submit" class="btn btn-primary mt-2">Загрузить</button>
+        </form>
+
+        <div id="plotContainer" class="mt-4"></div>
+
+        <section class="mt-4">
+            <h2>Временной ряд с матричным профилем:</h2>
+            <div id="plot" class="mb-4">{{ plot_html|safe }}</div>
+        </section>
+
+    </div>
+{% endblock %}
