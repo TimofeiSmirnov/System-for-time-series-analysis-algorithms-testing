@@ -92,7 +92,6 @@ def visualize_time_series_ad_multidim(timestamps, values, ad_values, matrix_prof
         series_values = values[dim]
         anomaly_x = [timestamps[i] for i in ad_values]
         anomaly_y = [series_values[i] for i in ad_values]
-        profile_values = matrix_profile[dim]
 
         fig.add_trace(
             go.Scatter(
@@ -102,7 +101,7 @@ def visualize_time_series_ad_multidim(timestamps, values, ad_values, matrix_prof
                 line=dict(color=f'rgba(0, 0, 255, {1 - dim * 0.2})'),
                 name=f"Временной ряд {dim + 1}"
             ),
-            row=dim * 2 + 1, col=1
+            row=dim + 1, col=1
         )
 
         fig.add_trace(
@@ -113,8 +112,11 @@ def visualize_time_series_ad_multidim(timestamps, values, ad_values, matrix_prof
                 marker=dict(color='red', size=8),
                 name=f"Аномалии {dim + 1}"
             ),
-            row=dim * 2 + 1, col=1
+            row=dim + 1, col=1
         )
+
+    for dim in range(num_dimensions):
+        profile_values = matrix_profile[dim]
 
         fig.add_trace(
             go.Scatter(
@@ -124,7 +126,7 @@ def visualize_time_series_ad_multidim(timestamps, values, ad_values, matrix_prof
                 line=dict(color='green'),
                 name=f"Матричный профиль {dim + 1}"
             ),
-            row=dim * 2 + 2, col=1
+            row=num_dimensions + dim + 1, col=1
         )
 
     fig.update_layout(

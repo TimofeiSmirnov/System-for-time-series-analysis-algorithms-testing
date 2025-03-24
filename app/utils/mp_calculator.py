@@ -2,16 +2,16 @@ import time
 import stumpy
 from matrixprofile import matrixProfile
 from dask.distributed import Client
+import numpy as np
 
 
 def generate_mp(algorithm_type, time_series, m):
     """Вычисляет матричный профиль в зависимости от запроса пользователя и замеряет время выполнения"""
     start_time = time.time()
-
     if algorithm_type == "stomp":
         result = [matrixProfile.stomp(time_series[0], m)[0]]
     elif algorithm_type == "scrimp++":
-        result = [matrixProfile.scrimp_plus_plus(time_series[0], m)[0]]
+        result = [matrixProfile.scrimp_plus_plus(np.array(time_series[0]), m)[0]]
     elif algorithm_type == "stump":
         result = stumpy.stump(time_series[0], m=m)
     elif algorithm_type == "mstump":

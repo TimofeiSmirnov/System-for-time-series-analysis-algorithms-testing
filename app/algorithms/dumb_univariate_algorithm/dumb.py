@@ -4,8 +4,7 @@ import statistics
 import numpy as np
 
 
-def dumb_algorithm(time_series, threshold_number):
-    m = 40
+def dumb_algorithm(time_series, threshold_number, m):
     matrix_profile = stumpy.stump(time_series, m=m)
     mp_data = matrix_profile[:, 0]
     threshold = np.percentile(mp_data, threshold_number)
