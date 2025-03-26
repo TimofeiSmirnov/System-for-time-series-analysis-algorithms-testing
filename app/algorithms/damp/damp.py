@@ -298,5 +298,6 @@ def damp_algorithm(time_series, threshold_number):
     threshold = np.percentile(left_mp, threshold_number)
     above_threshold = left_mp > threshold
     anomaly_indices = np.where(above_threshold)[0]
+    # print(anomaly_indices)
 
     return anomaly_indices

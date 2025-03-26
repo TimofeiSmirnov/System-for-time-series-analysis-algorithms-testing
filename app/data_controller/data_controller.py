@@ -1,9 +1,7 @@
 import pandas as pd
-import numpy as np
 import os
 from typing import Dict
 from app.data_controller.data_loader import TimeSeriesGenerator
-from io import StringIO
 
 
 class DataController:
@@ -43,7 +41,7 @@ class DataController:
             print(f"Ошибка при загрузке ряда: {e}")
             return None
 
-    def get_available_series(self) -> Dict[str, Dict[str, int]]:
+    def get_available_series(self):
         """Возвращает список доступных временных рядов с их характеристиками."""
         return self.series_metadata
 
@@ -57,5 +55,5 @@ class DataController:
         loaded_time_series = pd.read_csv(metadata["path"])
         timestamps = loaded_time_series.iloc[:, 0]
         df_filtered = loaded_time_series.drop(loaded_time_series.columns[0], axis=1)
-        time_series = [df_filtered[col].tolist() for col in df_filtered.columns]
+        time_series = [df_filtered[col].map(float).tolist() for col in df_filtered.columns]
         return timestamps, time_series

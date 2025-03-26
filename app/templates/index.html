@@ -15,7 +15,7 @@
         <label for="n">Длина ряда:</label>
         <input type="number" name="n" id="n" class="form-control" value="300" min="100" max="1000000" required>
         <label for="k">Размерность:</label>
-        <input type="number" name="k" id="k" class="form-control" value="64" min="1" max="100" required>
+        <input type="number" name="k" id="k" class="form-control" value="1" min="1" max="10" required onchange="updateAlgorithmOptions()">
 
         <label for="algorithm_for_gen" class="form-label">Алгоритм вычисления матричного профиля:</label>
         <select name="algorithm_for_gen" id="algorithm_for_gen" class="form-select">
@@ -25,7 +25,7 @@
             <option value="mstump">MSTUMP</option>
         </select>
         <label for="m_for_gen" class="form-label">Длина окна матричного профиля (m):</label>
-        <input type="number" name="m_for_gen" id="m_for_gen" class="form-control" value="60" min="1" required>
+        <input type="number" name="m_for_gen" id="m_for_gen" class="form-control" value="64" min="1" required>
 
         <button type="submit" class="btn btn-primary mt-2">Сгенерировать</button>
     </form>
@@ -49,7 +49,7 @@
             <option value="mstump">MSTUMP</option>
         </select>
         <label for="m_for_choose" class="form-label">Длина окна матричного профиля (m):</label>
-        <input type="number" name="m_for_choose" id="m_for_choose" class="form-control" value="60" min="1" required>
+        <input type="number" name="m_for_choose" id="m_for_choose" class="form-control" value="64" min="1" required>
 
         <button type="submit" class="btn btn-primary mt-2">Выбрать</button>
     </form>
@@ -67,7 +67,7 @@
             <option value="mstump">MSTUMP</option>
         </select>
         <label for="m_for_load" class="form-label">Длина окна матричного профиля (m):</label>
-        <input type="number" name="m_for_load" id="m_for_load" class="form-control" value="60" min="1" required>
+        <input type="number" name="m_for_load" id="m_for_load" class="form-control" value="64" min="1" required>
 
         <button type="submit" class="btn btn-primary mt-2">Загрузить</button>
     </form>
@@ -79,4 +79,25 @@
         <div id="plot" class="mb-4">{{ plot_html|safe }}</div>
     </section>
 </div>
+
+<script>
+    function updateAlgorithmOptions() {
+        var kValue = document.getElementById("k").value;
+        var algorithmSelect = document.getElementById("algorithm_for_gen");
+
+        if (kValue > 1) {
+            // Оставляем только MSTUMP, если k > 1
+            algorithmSelect.innerHTML = '<option value="mstump">MSTUMP</option>';
+        } else {
+            // Восстанавливаем все алгоритмы, если k <= 1
+            algorithmSelect.innerHTML = `
+                <option value="stomp">STOMP</option>
+                <option value="scrimp++">SCRIMP++</option>
+                <option value="stump">STUMP</option>
+                <option value="mstump">MSTUMP</option>
+            `;
+        }
+    }
+</script>
+
 {% endblock %}

@@ -9,6 +9,8 @@ class ApplyAnomalyDetectionAlgorithms:
     def __init__(self):
         self.algorithms_1d = {"dumb": self._dumb, "damp": self._damp}
         self.algorithms_nd = {"post_sorting": self._post_sorting, "pre_sorting": self._pre_sorting}
+        self.algorithms_for_1d_ad = ["dumb", "damp"]
+        self.algorithms_for_nd_ad = ["pre_sorting", "post_sorting"]
 
     def _dumb(self, time_series, threshold, m):
         return dumb_algorithm(time_series, threshold, m)
