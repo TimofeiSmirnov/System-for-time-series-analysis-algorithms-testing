@@ -2,12 +2,13 @@ import pandas as pd
 import numpy as np
 import os
 from typing import Dict
-from app.data_controller.data_loader import generate_time_series
+from app.data_controller.data_loader import TimeSeriesGenerator
 from io import StringIO
 
 
 class DataController:
     def __init__(self):
+        self.generator = None
         self.storage_path = "app/data"
         self.series_metadata = self._load_metadata()
 
@@ -47,7 +48,8 @@ class DataController:
         return self.series_metadata
 
     def generate_series(self, time_series_length, time_series_dim):
-        return generate_time_series(time_series_length, time_series_dim)
+        self.generator = TimeSeriesGenerator(time_series_length, time_series_dim)
+        return self.generator.generate_time_series()
 
     def get_series(self, series_name: str):
         """Возвращает конкретный временной ряд по имени, если он есть в хранилище."""

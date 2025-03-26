@@ -2,64 +2,72 @@ import numpy as np
 import random
 import math
 
-
-def generate_bell(length, amplitude, default_variance):
-    """Генерирует восходящий паттерн"""
-    bell = np.random.normal(0, default_variance, length) + amplitude * np.arange(length)/length
-    return bell
+import numpy as np
+import random
+import math
 
 
-def generate_funnel(length, amplitude, default_variance):
-    """Генерирует нисходящий паттерн"""
-    funnel = np.random.normal(0, default_variance, length) + amplitude * np.arange(length)[::-1]/length
-    return funnel
+class TimeSeriesGenerator:
+    def __init__(self, n, k, avg_pattern_length=5, avg_amplitude=1, default_variance=1,
+                 variance_pattern_length=10, variance_amplitude=2, generators=None, include_negatives=False):
+        self.n = n
+        self.k = k
+        self.avg_pattern_length = avg_pattern_length
+        self.avg_amplitude = avg_amplitude
+        self.default_variance = default_variance
+        self.variance_pattern_length = variance_pattern_length
+        self.variance_amplitude = variance_amplitude
+        self.include_negatives = include_negatives
 
+        if generators is None:
+            self.generators = [self.generate_bell, self.generate_funnel, self.generate_cylinder]
+        else:
+            self.generators = generators
 
-def generate_cylinder(length, amplitude, default_variance):
-    """Генерирует горизонтальный паттерн"""
-    cylinder = np.random.normal(0, default_variance, length) + amplitude
-    return cylinder
+    def generate_bell(self, length, amplitude, default_variance):
+        """Генерирует восходящий паттерн"""
+        bell = np.random.normal(0, default_variance, length) + amplitude * np.arange(length) / length
+        return bell
 
+    def generate_funnel(self, length, amplitude, default_variance):
+        """Генерирует нисходящий паттерн"""
+        funnel = np.random.normal(0, default_variance, length) + amplitude * np.arange(length)[::-1] / length
+        return funnel
 
-std_generators = [generate_bell, generate_funnel, generate_cylinder]
+    def generate_cylinder(self, length, amplitude, default_variance):
+        """Генерирует горизонтальный паттерн"""
+        cylinder = np.random.normal(0, default_variance, length) + amplitude
+        return cylinder
 
+    def generate_ts_data(self):
+        """Генерирует временной ряд"""
+        data = np.random.normal(0, self.default_variance, self.n)
+        current_start = random.randint(0, self.avg_pattern_length)
+        current_length = max(1, math.ceil(random.gauss(self.avg_pattern_length, self.variance_pattern_length)))
 
-def generate_ts_data(length=100, avg_pattern_length=5, avg_amplitude=1,
-                          default_variance=1, variance_pattern_length=10, variance_amplitude=2,
-                          generators=std_generators, include_negatives=False):
-    """Генерирует временной ряд"""
-    data = np.random.normal(0, default_variance, length)
-    current_start = random.randint(0, avg_pattern_length)
-    current_length = max(1, math.ceil(random.gauss(avg_pattern_length, variance_pattern_length)))
+        while current_start + current_length < self.n:
+            generator = random.choice(self.generators)
+            current_amplitude = random.gauss(self.avg_amplitude, self.variance_amplitude)
 
-    while current_start + current_length < length:
-        generator = random.choice(generators)
-        current_amplitude = random.gauss(avg_amplitude, variance_amplitude)
+            while current_length <= 0:
+                current_length = -(current_length - 1)
 
-        while current_length <= 0:
-            current_length = -(current_length - 1)
+            pattern = generator(current_length, current_amplitude, self.default_variance)
 
+            data[current_start: current_start + current_length] = pattern
 
-        pattern = generator(current_length, current_amplitude, default_variance)
+            current_start = current_start + current_length + random.randint(0, self.avg_pattern_length)
+            current_length = max(1, math.ceil(random.gauss(self.avg_pattern_length, self.variance_pattern_length)))
 
-        data[current_start: current_start + current_length] = pattern
+        return np.array(data)
 
-        current_start = current_start + current_length + random.randint(0, avg_pattern_length)
-        current_length = max(1, math.ceil(random.gauss(avg_pattern_length, variance_pattern_length)))
+    def generate_timestamps(self):
+        """Создает последовательность временных меток"""
+        return np.arange(self.n).astype(np.float64)
 
-    return np.array(data)
-
-
-def generate_timestamps(n):
-    """Создает последовательность временных меток"""
-    return np.arange(n).astype(np.float64)
-
-
-def generate_time_series(n, k):
-    """Сейчас генерирует случайный ряд, но скоро можно будет его загружать из базы"""
-    values = []
-
-    for i in range(k):
-        values.append(generate_ts_data(length=n, avg_pattern_length=20, default_variance=2))
-
-    return generate_timestamps(n), values
+    def generate_time_series(self):
+        """Генерирует временные ряды"""
+        values = []
+        for i in range(self.k):
+            values.append(self.generate_ts_data())
+        return self.generate_timestamps(), values

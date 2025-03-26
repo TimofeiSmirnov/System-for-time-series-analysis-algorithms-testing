@@ -1,6 +1,6 @@
 import os
 from flask import Flask, render_template, request
-from app.algorithms.apply_algorithms import apply_algorithm_1d, apply_algorithm_nd
+from app.algorithms.apply_algorithms import ApplyAnomalyDetectionAlgorithms
 from app.data_controller.data_controller import DataController
 from app.utils.mp_calculator import generate_mp, arc_curve_calculator
 from app.utils.visualization import visualize_time_series_with_matrix_profile, visualize_time_series_ad, \
@@ -9,13 +9,14 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'app', 'data', 'userTS')
+algorithm_applier = ApplyAnomalyDetectionAlgorithms()
+data_controller = DataController()
 
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     """Главная страница с возможностью выбора ряда и генерации матричного профиля по нему"""
     plot_html = None
-    data_controller = DataController()
     available_series = data_controller.get_available_series()
     timestamps = []
     time_series = []
@@ -80,7 +81,6 @@ def index():
 def ad_analysis():
     """Страница для анализа алгоритмов Anomaly Detection (AD)"""
     plot_html = None
-    data_controller = DataController()
     available_series = data_controller.get_available_series()
     timestamps = []
     time_series = []
@@ -103,7 +103,7 @@ def ad_analysis():
                 matrix_profile_algorithm = request.form["algorithm_for_gen"]
                 threshold = float(request.form["threshold_for_gen"])
                 window_length = int(request.form["m_gen"])
-                anomaly_indexes = apply_algorithm_1d(matrix_profile_algorithm, time_series[0], threshold, window_length)
+                anomaly_indexes = algorithm_applier.apply_algorithm_1d(matrix_profile_algorithm, time_series[0], threshold, window_length)
         elif 'series' in request.form:
             requested_time_series_to_load = request.form["series"]
             timestamps, time_series = data_controller.get_series(requested_time_series_to_load)
@@ -112,7 +112,7 @@ def ad_analysis():
                 matrix_profile_algorithm = request.form["algorithm_for_choose"]
                 threshold = float(request.form["threshold_for_choose"])
                 window_length = int(request.form["m_choose"])
-                anomaly_indexes = apply_algorithm_1d(matrix_profile_algorithm, time_series[0], threshold, window_length)
+                anomaly_indexes = algorithm_applier.apply_algorithm_1d(matrix_profile_algorithm, time_series[0], threshold, window_length)
         elif 'file' in request.files:
             uploaded_file = request.files['file']
 
@@ -131,7 +131,7 @@ def ad_analysis():
                 matrix_profile_algorithm = request.form["algorithm_for_load"]
                 threshold = float(request.form["threshold_for_load"])
                 window_length = int(request.form["m_load"])
-                anomaly_indexes = apply_algorithm_1d(matrix_profile_algorithm, time_series[0], threshold, window_length)
+                anomaly_indexes = algorithm_applier.apply_algorithm_1d(matrix_profile_algorithm, time_series[0], threshold, window_length)
 
         plot_html = visualize_time_series_ad(timestamps, time_series[0], anomaly_indexes)
         return render_template("ad_analysis.html", plot_html=plot_html, available_series=available_series)
@@ -184,7 +184,6 @@ def cpd_analysis():
 def multidim_ad_analysis():
     """Страница для анализа алгоритмов Anomaly Detection (AD)"""
     plot_html = None
-    data_controller = DataController()
     available_series = data_controller.get_available_series()
     timestamps = []
     time_series = []
@@ -234,7 +233,7 @@ def multidim_ad_analysis():
                 threshold = float(request.form["threshold_for_load"])
                 window_size = int(request.form["m_load"])
 
-        anomaly_indexes, matrix_profile = apply_algorithm_nd(matrix_profile_algorithm, time_series, threshold, window_size)
+        anomaly_indexes, matrix_profile = algorithm_applier.apply_algorithm_nd(matrix_profile_algorithm, time_series, threshold, window_size)
         plot_html = visualize_time_series_ad_multidim(timestamps, time_series, anomaly_indexes, matrix_profile)
         return render_template("multidim_ad_analysis.html", plot_html=plot_html, available_series=available_series)
 
