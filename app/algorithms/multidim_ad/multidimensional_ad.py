@@ -28,6 +28,23 @@ def multidimensional_ad_post_sorting(time_series, threshold, m):
     return anomaly_indices, sorted_list_of_matrix_profiles
 
 
+def multidimensional_ad_post_sorting_for_test(time_series, threshold, m):
+    """Детектинг аномалий в многомерных временных рядах post sorting алгоритм"""
+    number_of_dimensions = len(time_series)
+    list_of_matrix_profiles = []
+
+    for d in range(number_of_dimensions):
+        matrix_profile = stumpy.stump(time_series[d], m)[:, 0]
+        list_of_matrix_profiles.append(matrix_profile)
+
+    sorted_list_of_matrix_profiles = sorted(list_of_matrix_profiles, key=lambda profile: np.min(profile))
+    threshold = np.percentile(sorted_list_of_matrix_profiles[0], threshold)
+    above_threshold = sorted_list_of_matrix_profiles[0] > threshold
+    anomaly_indices = np.where(above_threshold)[0]
+
+    return anomaly_indices
+
+
 def multidimensional_ad_pre_sorting(time_series, threshold, m):
     """Детектинг аномалий в многомерных временных рядах pre sorting алгоритм"""
     number_of_dimensions = len(time_series)
@@ -36,7 +53,9 @@ def multidimensional_ad_pre_sorting(time_series, threshold, m):
     tensor_of_euclidian_distances = np.full((len_time_series - m + 1, len_time_series - m + 1, number_of_dimensions), np.inf)
 
     for d in range(number_of_dimensions):
+        print(d)
         for i in range(len_time_series - m + 1):
+            print("-", i)
             for j in range(len_time_series - m + 1):
                 if i == j:
                     continue
@@ -49,6 +68,31 @@ def multidimensional_ad_pre_sorting(time_series, threshold, m):
     anomaly_indices = np.where(matrix_profile_matrix > threshold_value)
 
     return anomaly_indices, matrix_profile_matrix
+
+
+def multidimensional_ad_pre_sorting_for_test(time_series, threshold, m):
+    """Детектинг аномалий в многомерных временных рядах pre sorting алгоритм"""
+    number_of_dimensions = len(time_series)
+    len_time_series = len(time_series[0])
+
+    tensor_of_euclidian_distances = np.full((len_time_series - m + 1, len_time_series - m + 1, number_of_dimensions), np.inf)
+
+    for d in range(number_of_dimensions):
+        print(d)
+        for i in range(len_time_series - m + 1):
+            print("-", i)
+            for j in range(len_time_series - m + 1):
+                if i == j:
+                    continue
+                tensor_of_euclidian_distances[i, j, d] = z_normalized_euclidean_distance(
+                    time_series[d][i:i + m], time_series[d][j:j + m]
+                )
+
+    matrix_profile_matrix = np.min(tensor_of_euclidian_distances, axis=2)
+    threshold_value = np.percentile(matrix_profile_matrix, threshold)
+    anomaly_indices = np.where(matrix_profile_matrix > threshold_value)
+
+    return anomaly_indices
 
 
 # def multidimensional_ad_with_kdps(time_series, threshold, m):

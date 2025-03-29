@@ -4,6 +4,7 @@ from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 from app.algorithms.damp.utils import contains_constant_regions, nextpow2, MASS_V2
 
@@ -270,20 +271,21 @@ def DAMP_2_0(
     return left_mp, discord_score, position
 
 
-def damp_algorithm(time_series, threshold_number):
-    # Set parameters
+def damp_algorithm(time_series, threshold_number, arguments=[100, 400]):
+    subsequence_length = arguments[0]
+    location_to_start_processing = arguments[1]
+
     parser = argparse.ArgumentParser(description="Set parameters")
-    parser.add_argument("--subsequence_length", type=int, default=100)
+    parser.add_argument("--subsequence_length", type=int, default=subsequence_length)
     parser.add_argument("--stride", type=int, default=1)
-    parser.add_argument("--location_to_start_processing", type=int, default=400)
+    parser.add_argument("--location_to_start_processing", type=int, default=location_to_start_processing)
     parser.add_argument("--lookahead", type=int, default=None)
     parser.add_argument("--enable_output", action="store_true")
     args = parser.parse_args()
-
     # Load data
     # ts = np.loadtxt("data/samples/BourkeStreetMall.txt")
     # print(ts)
-
+    print("damp started")
     # Run DAMP
     left_mp, discord_score, position = DAMP_2_0(
         time_series=time_series,
@@ -293,11 +295,11 @@ def damp_algorithm(time_series, threshold_number):
         lookahead=args.lookahead,
         enable_output=args.enable_output,
     )
+    print("damp finished")
 
     # Тут выбираем самые крупные скоры
     threshold = np.percentile(left_mp, threshold_number)
     above_threshold = left_mp > threshold
     anomaly_indices = np.where(above_threshold)[0]
     # print(anomaly_indices)
-
     return anomaly_indices

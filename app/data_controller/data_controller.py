@@ -55,5 +55,8 @@ class DataController:
         loaded_time_series = pd.read_csv(metadata["path"])
         timestamps = loaded_time_series.iloc[:, 0]
         df_filtered = loaded_time_series.drop(loaded_time_series.columns[0], axis=1)
-        time_series = [df_filtered[col].map(float).tolist() for col in df_filtered.columns]
+        time_series = []
+        for col in df_filtered.columns:
+            time_series.append(df_filtered[col].map(float).tolist())
+
         return timestamps, time_series

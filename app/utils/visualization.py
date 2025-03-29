@@ -6,14 +6,13 @@ def visualize_time_series_with_matrix_profile(timestamps, values, values_mp):
     """Визуализирует многомерный временной ряд и несколько матричных профилей"""
     num_dimensions = len(values)
     num_mp = len(values_mp)
-    print(num_dimensions, num_mp)
     total_rows = num_dimensions + num_mp
 
     fig = make_subplots(
         rows=total_rows,
         cols=1,
         shared_xaxes=True,
-        vertical_spacing=0.1,
+        vertical_spacing=0.02,
         subplot_titles=[f"Измерение {i + 1}" for i in range(num_dimensions)] +
                        [f"Матричный профиль {i + 1}" for i in range(num_mp)]
     )
@@ -83,7 +82,7 @@ def visualize_time_series_ad_multidim(timestamps, values, ad_values, matrix_prof
 
     fig = make_subplots(
         rows=2 * num_dimensions, cols=1, shared_xaxes=True,
-        vertical_spacing=0.1,
+        vertical_spacing=0.02,
         subplot_titles=[f"Временной ряд {dim + 1}" for dim in range(num_dimensions)] +
                        [f"Матричный профиль {dim + 1}" for dim in range(num_dimensions)]
     )
@@ -98,7 +97,7 @@ def visualize_time_series_ad_multidim(timestamps, values, ad_values, matrix_prof
                 x=timestamps,
                 y=series_values,
                 mode='lines',
-                line=dict(color=f'rgba(0, 0, 255, {1 - dim * 0.2})'),
+                line=dict(color=f'rgba(0, 0, 255, {1 - dim * 0.1})'),
                 name=f"Временной ряд {dim + 1}"
             ),
             row=dim + 1, col=1

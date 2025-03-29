@@ -16,7 +16,6 @@
         <input type="number" name="n" id="n" class="form-control" value="300" min="100" max="1000000" required>
         <label for="k">Размерность:</label>
         <input type="number" name="k" id="k" class="form-control" value="1" min="1" max="10" required onchange="updateAlgorithmOptions()">
-
         <label for="algorithm_for_gen" class="form-label">Алгоритм вычисления матричного профиля:</label>
         <select name="algorithm_for_gen" id="algorithm_for_gen" class="form-select">
             <option value="stomp">STOMP</option>
@@ -75,8 +74,13 @@
     <div id="plotContainer" class="mt-4"></div>
 
     <section class="mt-4">
-        <h2>Временной ряд и матричный профиль:</h2>
-        <div id="plot" class="mb-4">{{ plot_html|safe }}</div>
+        <p>
+        <h2>Временной ряд с полученными аномалиями:</h2>
+        {% if plot_html %}
+            <div id="plot" class="mb-4">{{ plot_html|safe }}</div>
+        {% else %}
+            <p>Ожидаем параметров.</p>
+        {% endif %}
     </section>
 </div>
 
@@ -86,10 +90,8 @@
         var algorithmSelect = document.getElementById("algorithm_for_gen");
 
         if (kValue > 1) {
-            // Оставляем только MSTUMP, если k > 1
             algorithmSelect.innerHTML = '<option value="mstump">MSTUMP</option>';
         } else {
-            // Восстанавливаем все алгоритмы, если k <= 1
             algorithmSelect.innerHTML = `
                 <option value="stomp">STOMP</option>
                 <option value="scrimp++">SCRIMP++</option>

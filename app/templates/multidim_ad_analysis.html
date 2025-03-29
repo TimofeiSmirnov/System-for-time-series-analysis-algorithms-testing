@@ -77,12 +77,17 @@
             <button type="submit" class="btn btn-primary mt-2">Загрузить</button>
         </form>
 
-        <div id="plotContainer" class="mt-4"></div>
-
+        <div class="container mt-4">
         <section class="mt-4">
-            <h2>Временной ряд с матричным профилем:</h2>
-            <div id="plot" class="mb-4">{{ plot_html|safe }}</div>
+            <p>
+            <h2>Временной ряд с полученными аномалиями:</h2>
+            {% if plot_html %}
+                <div id="plot" class="mb-4">{{ plot_html|safe }}</div>
+            {% else %}
+                <p>Ожидаем параметров.</p>
+            {% endif %}
         </section>
+    </div>
 
     </div>
 {% endblock %}

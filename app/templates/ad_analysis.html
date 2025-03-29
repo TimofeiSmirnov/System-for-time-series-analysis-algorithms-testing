@@ -20,7 +20,7 @@
             <input type="number" name="k" id="k" class="form-control" value="1" min="1" max="100" required>
 
             <label for="algorithm_for_gen" class="form-label">Алгоритм:</label>
-            <select name="algorithm_for_gen" id="algorithm_for_gen" class="form-select">
+            <select name="algorithm_for_gen" id="algorithm_for_gen" class="form-select" onchange="toggleDampFields(this.value, 'gen')">
                 <option value="dumb">Прямолинейный с перцентилем</option>
                 <option value="damp">DAMP с перцентилем</option>
             </select>
@@ -29,6 +29,13 @@
 
             <label for="m_gen" class="form-label">Ширина окна в алгоритмах:</label>
             <input type="number" name="m_gen" id="m_gen" class="form-control" value="50" min="1" max="1000000" step="1" required>
+
+            <div id="dampFields_gen" style="display: none;">
+                <label for="learn_length_damp_gen" class="form-label">Длина обучения DAMP:</label>
+                <input type="number" name="learn_length_damp_gen" id="learn_length_damp_gen" class="form-control" min="1" step="1">
+                <label for="window_length_damp_gen" class="form-label">Длина окна DAMP:</label>
+                <input type="number" name="window_length_damp_gen" id="window_length_damp_gen" class="form-control" min="1" step="1">
+            </div>
 
             <button type="submit" class="btn btn-primary mt-2">Сгенерировать</button>
         </form>
@@ -45,7 +52,7 @@
             </select>
 
             <label for="algorithm_for_choose" class="form-label">Алгоритм:</label>
-            <select name="algorithm_for_choose" id="algorithm_for_choose" class="form-select">
+            <select name="algorithm_for_choose" id="algorithm_for_choose" class="form-select" onchange="toggleDampFields(this.value, 'choose')">
                 <option value="dumb">Прямолинейный с перцентилем</option>
                 <option value="damp">DAMP с перцентилем</option>
             </select>
@@ -54,6 +61,13 @@
 
             <label for="m_choose" class="form-label">Ширина окна в алгоритмах:</label>
             <input type="number" name="m_choose" id="m_choose" class="form-control" value="50" min="1" max="1000000" step="1" required>
+
+            <div id="dampFields_choose" style="display: none;">
+                <label for="learn_length_damp_choose" class="form-label">Длина обучения DAMP:</label>
+                <input type="number" name="learn_length_damp_choose" id="learn_length_damp_choose" class="form-control" min="1" step="1">
+                <label for="window_length_damp_choose" class="form-label">Длина окна DAMP:</label>
+                <input type="number" name="window_length_damp_choose" id="window_length_damp_choose" class="form-control" min="1" step="1">
+            </div>
 
             <button type="submit" class="btn btn-primary mt-2">Выбрать</button>
         </form>
@@ -64,25 +78,37 @@
             <input type="file" name="file" id="file" class="form-control" accept=".csv" required>
 
             <label for="algorithm_for_load" class="form-label">Алгоритм:</label>
-            <select name="algorithm_for_load" id="algorithm_for_load" class="form-select">
+            <select name="algorithm_for_load" id="algorithm_for_load" class="form-select" onchange="toggleDampFields(this.value, 'load')">
                 <option value="dumb">Прямолинейный с перцентилем</option>
                 <option value="damp">DAMP с перцентилем</option>
             </select>
-            <label for="threshold_for_load" class="form-label">Перцентиль определения аномалии:</label>
-            <input type="number" name="threshold_for_load" id="threshold_for_load" class="form-control" value="99.5" min="0" max="100" step="0.01" required>
 
-            <label for="m_load" class="form-label">Ширина окна в алгоритмах:</label>
-            <input type="number" name="m_load" id="m_load" class="form-control" value="50" min="1" max="1000000" step="1" required>
+            <div id="dampFields_load" style="display: none;">
+                <label for="learn_length_damp_load" class="form-label">Длина обучения DAMP:</label>
+                <input type="number" name="learn_length_damp_load" id="learn_length_damp_load" class="form-control" min="1" step="1">
+                <label for="window_length_damp_load" class="form-label">Длина окна DAMP:</label>
+                <input type="number" name="window_length_damp_load" id="window_length_damp_load" class="form-control" min="1" step="1">
+            </div>
 
             <button type="submit" class="btn btn-primary mt-2">Загрузить</button>
         </form>
-
-        <div id="plotContainer" class="mt-4"></div>
-
-        <section class="mt-4">
-            <h2>Временной ряд с полученными аномалиями:</h2>
-            <div id="plot" class="mb-4">{{ plot_html|safe }}</div>
-        </section>
-
     </div>
+    <div class="container mt-4">
+        <section class="mt-4">
+            <p>
+            <h2>Временной ряд с полученными аномалиями:</h2>
+            {% if plot_html %}
+                <div id="plot" class="mb-4">{{ plot_html|safe }}</div>
+            {% else %}
+                <p>Ожидаем параметров.</p>
+            {% endif %}
+        </section>
+    </div>
+
+<script>
+    function toggleDampFields(value, formType) {
+        document.getElementById("dampFields_" + formType).style.display = value === "damp" ? "block" : "none";
+    }
+</script>
+
 {% endblock %}

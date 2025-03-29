@@ -49,9 +49,16 @@
 
     <div id="plotContainer" class="mt-4"></div>
 
-    <section class="mt-4">
-        <h2>Временной ряд с полученными аномалиями:</h2>
-        <div id="plot" class="mb-4">{{ plot_html|safe }}</div>
-    </section>
+    <div class="container mt-4">
+        <section class="mt-4">
+            <p>
+            <h2>Временной ряд с полученными аномалиями:</h2>
+            {% if plot_html %}
+                <div id="plot" class="mb-4">{{ plot_html|safe }}</div>
+            {% else %}
+                <p>Ожидаем параметров.</p>
+            {% endif %}
+        </section>
+    </div>
 </div>
 {% endblock %}

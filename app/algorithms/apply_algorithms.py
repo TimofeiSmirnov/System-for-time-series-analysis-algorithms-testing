@@ -15,8 +15,8 @@ class ApplyAnomalyDetectionAlgorithms:
     def _dumb(self, time_series, threshold, m):
         return dumb_algorithm(time_series, threshold, m)
 
-    def _damp(self, time_series, threshold, m):
-        return damp_algorithm(np.array(time_series), threshold)
+    def _damp(self, time_series, threshold, args):
+        return damp_algorithm(np.array(time_series), threshold, args)
 
     def _post_sorting(self, time_series, threshold, m):
         return multidimensional_ad_post_sorting(time_series, threshold, m)
@@ -24,7 +24,9 @@ class ApplyAnomalyDetectionAlgorithms:
     def _pre_sorting(self, time_series, threshold, m):
         return multidimensional_ad_pre_sorting(time_series, threshold, m)
 
-    def apply_algorithm_1d(self, algorithm_type, time_series, threshold, m):
+    def apply_algorithm_1d(self, algorithm_type, time_series, threshold, m, args: [None, None]):
+        if algorithm_type == "damp":
+            return self.algorithms_1d[algorithm_type](time_series, threshold, args)
         return self.algorithms_1d[algorithm_type](time_series, threshold, m)
 
     def apply_algorithm_nd(self, algorithm_type, time_series, threshold, m):
