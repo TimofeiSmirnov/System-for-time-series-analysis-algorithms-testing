@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 
-def visualize_time_series_with_matrix_profile(timestamps, values, values_mp):
+def visualize_time_series_with_matrix_profile(timestamps, values, values_mp, file_name=""):
     """Визуализирует многомерный временной ряд и несколько матричных профилей"""
     num_dimensions = len(values)
     num_mp = len(values_mp)
@@ -29,8 +29,12 @@ def visualize_time_series_with_matrix_profile(timestamps, values, values_mp):
             row=num_dimensions + i + 1, col=1
         )
 
+    if file_name != "":
+        title = "Визуализация многомерного временного ряда и матричных профилей в файле " + file_name
+    else:
+        title = "Визуализация многомерного временного ряда и матричных профилей"
     fig.update_layout(
-        title="Визуализация многомерного временного ряда и матричных профилей",
+        title=title,
         height=300 * total_rows,
         showlegend=True,
     )
@@ -38,7 +42,7 @@ def visualize_time_series_with_matrix_profile(timestamps, values, values_mp):
     return fig.to_html()
 
 
-def visualize_time_series_ad(timestamps, values, ad_values):
+def visualize_time_series_ad(timestamps, values, ad_values, file_name=""):
     """Визуализирует одномерный временной ряд и выделяет аномалии красными точками"""
     fig = go.Figure()
 
@@ -65,8 +69,14 @@ def visualize_time_series_ad(timestamps, values, ad_values):
         )
     )
 
+    if file_name != "":
+        title = "Визуализация временного ряда с аномалиями " + file_name
+    else:
+        title = "Визуализация временного ряда с аномалиями"
+
+
     fig.update_layout(
-        title="Визуализация временного ряда с аномалиями",
+        title=title,
         xaxis_title="Время",
         yaxis_title="Значение",
         showlegend=True
@@ -75,7 +85,7 @@ def visualize_time_series_ad(timestamps, values, ad_values):
     return fig.to_html()
 
 
-def visualize_time_series_ad_multidim(timestamps, values, ad_values, matrix_profile):
+def visualize_time_series_ad_multidim(timestamps, values, ad_values, matrix_profile, file_name=""):
     """Визуализирует многомерный временной ряд с аномалиями и матричные профили на отдельных графиках"""
 
     num_dimensions = len(values)
@@ -128,8 +138,14 @@ def visualize_time_series_ad_multidim(timestamps, values, ad_values, matrix_prof
             row=num_dimensions + dim + 1, col=1
         )
 
+    if file_name != "":
+        title = "Визуализация многомерного временного ряда с аномалиями и матричными профилями " + file_name
+    else:
+        title = "Визуализация многомерного временного ряда с аномалиями и матричными профилями"
+
+
     fig.update_layout(
-        title="Визуализация многомерного временного ряда с аномалиями и матричными профилями",
+        title=title,
         xaxis_title="Время",
         yaxis_title="Значение",
         showlegend=True,
@@ -139,7 +155,7 @@ def visualize_time_series_ad_multidim(timestamps, values, ad_values, matrix_prof
     return fig.to_html()
 
 
-def visualize_time_series_with_fluss(timestamps, values, values_fluss):
+def visualize_time_series_with_fluss(timestamps, values, values_fluss, file_name=""):
     """Визуализирует многомерный временной ряд и несколько арочных кривых"""
     num_dimensions = len(values)
     num_of_arc_curves = len(values_fluss)
@@ -167,8 +183,13 @@ def visualize_time_series_with_fluss(timestamps, values, values_fluss):
             row=num_dimensions + i + 1, col=1
         )
 
+    if file_name != "":
+        title = "Визуализация многомерного временного ряда и арочной кривой " + file_name
+    else:
+        title = "Визуализация многомерного временного ряда и арочной кривой"
+
     fig.update_layout(
-        title="Визуализация многомерного временного ряда и арочной кривой",
+        title=title,
         height=300 * total_rows,
         showlegend=True,
     )

@@ -45,8 +45,18 @@ class DataController:
         """Возвращает список доступных временных рядов с их характеристиками."""
         return self.series_metadata
 
-    def generate_series(self, time_series_length, time_series_dim):
-        self.generator = TimeSeriesGenerator(time_series_length, time_series_dim)
+
+    def generate_series(self, time_series_length, time_series_dim, avg_pattern_length=50, avg_amplitude=1,
+                        default_variance=0.1, variance_pattern_length=50, variance_amplitude=1):
+        self.generator = TimeSeriesGenerator(
+            time_series_length,
+            time_series_dim,
+            avg_pattern_length,
+            avg_amplitude,
+            default_variance,
+            variance_pattern_length,
+            variance_amplitude
+        )
         return self.generator.generate_time_series()
 
     def get_series(self, series_name: str):

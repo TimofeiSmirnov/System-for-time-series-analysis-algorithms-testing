@@ -2,10 +2,6 @@ import numpy as np
 import random
 import math
 
-import numpy as np
-import random
-import math
-
 
 class TimeSeriesGenerator:
     def __init__(self, n, k, avg_pattern_length=50, avg_amplitude=1, default_variance=0.1,
