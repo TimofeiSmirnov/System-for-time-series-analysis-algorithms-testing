@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Matrix Profile overview</h2>
+    
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Univariate</th>
+                <th>Multivariate</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Anomaly Detection</td>
+                <td>Classic algorithm<br>DAMP</td>
+                <td>Pre-sorting<br>Post-sorting<br>MSTUMP</td>
+            </tr>
+            <tr>
+                <td>Change Point Detection</td>
+                <td>FLUSS</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="accordion mt-4" id="algorithmAccordion">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingClassic">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseClassic" aria-expanded="false" aria-controls="collapseClassic">
+                    Classic algorithm
+                </button>
+            </h2>
+            <div id="collapseClassic" class="accordion-collapse collapse" aria-labelledby="headingClassic" data-bs-parent="#algorithmAccordion">
+                <div class="accordion-body">
+                    <h4>Description</h4>
+                    <p>Идея алгоритма основана на свойствах матричного профиля, представляющего из себя структуру, хранящую расстояние от каждой подпоследовательности временного ряда с определенной длиной до ближайшей несобственной подпоследовательности временного ряда такой же длины. Расстояние в классическом исполнении определяется через z-нормализованную евклидову дистанцию. </p>
+                    <p>Алгоритм вычисляет матричный профиль для одномерного ряда и выбирает индексы, значения в которых являются наибольшими. То есть индексы строки, расстояние от которой до ближайшей несобственной подстроки ряда наибольшее.</p>
+                    <h4>Technical requirements</h4>
+                    <p>У данного алгоритма нет точных требований к техническим характеристикам компьютера. При этом скорость вычисления матричного профиля достаточно чувствительна к длине ряда и установленному значению длины каждой подстроки, для которой считается расстояние до других (обычно это значение называют m). </p>
+                    <h4>Implementation references</h4>
+                    <p>Наиболее распространенная реализация вычисления матричного профиля содержится в модуле Python <a href="https://stumpy.readthedocs.io/en/latest/Tutorial_STUMPY_Basics.html" target="_blank">STUMPY</a>, а также в модуле Python <a href="https://github.com/matrix-profile-foundation/matrixprofile" target="_blank">matrixprofile</a>.</p>
+                    <p>Первая библиотека использует свой собственный алгоритм STUMP, основанный на оптемизированном классическом алгоритме вычиселния матричного профиля STOMP.</p>
+                    <p>Вторая библиотека содержит реализации алгоритма STOMP и SCRIMP++ без дополнительных оптемизаций.</p>
+                    <h4>Article references</h4>
+                    <p><a href="https://www.cs.ucr.edu/~eamonn/MatrixProfile.html" target="_blank">Matrix Profile Main Page</a></p>
+                    <p><a href="https://www.cs.ucr.edu/~eamonn/SCRIMP_ICDM_camera_ready_updated.pdf" target="_blank">Matrix Profile XI: SCRIMP++: Time Series Motif Discovery at Interactive Speeds</a></p>
+                    <p><a href="https://www.cs.ucr.edu/~eamonn/Matrix_Profile_Tutorial_Part1.pdf" target="_blank">Time Series Data Mining Using the Matrix Profile: A Unifying View of Motif Discovery, Anomaly Detection, Segmentation, Classification, Clustering and Similarity Joins (Part I)</a></p>
+                    <p><a href="https://www.cs.ucr.edu/~eamonn/Matrix_Profile_Tutorial_Part2.pdf" target="_blank">Time Series Data Mining Using the Matrix Profile: A Unifying View of Motif Discovery, Anomaly Detection, Segmentation, Classification, Clustering and Similarity Joins (Part II)</a></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingDAMP">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDAMP" aria-expanded="false" aria-controls="collapseDAMP">
+                    DAMP
+                </button>
+            </h2>
+            <div id="collapseDAMP" class="accordion-collapse collapse" aria-labelledby="headingDAMP" data-bs-parent="#algorithmAccordion">
+                <div class="accordion-body">
+                    <h4>Description</h4>
+                    <p>Алгоритм DAMP (Discord Aware Matrix Profile) предназначен для эффективного обнаружения аномальных подпоследовательностей в временных рядах. Он использует два параллельных вектора: Left-aMP, который является аппроксимацией матричного профиля, и Pruned Vector, для исключения подпоследовательностей, которые не могут быть аномальными. Данный алгоритм разработан для эффективного онлайн поиска аномалий.</p>
+                    <p>Для работа алгоритму необходимо выделить некоторую часть временного ряда для обучения, так как во время работы алгоритм сравнивает существующие подпоследовательности с подпоследовательностями слева.</p>
+                    <h4>Technical requirements</h4>
+                    <p>Алгоритм не имеет технических требований и эффективно работает на всех типах устройств.</p>
+                    <h4>Implementation references</h4>
+                    <p>В открытом доступе имеется официальная реализация алгоритма <a href="https://github.com/sihohan/DAMP" target="_blank">DAMP</a>, именно она и встроена в данный сервис.</p>
+                    <h4>Article references</h4>
+                    <p><a href="https://dl.acm.org/doi/pdf/10.1145/3534678.3539271" target="_blank">Matrix Profile XXIV: Scaling Time Series Anomaly Detection to Trillions of Datapoints and Ultra-fast Arriving Data Streams</a></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingPreSorting">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePreSorting" aria-expanded="false" aria-controls="collapsePreSorting">
+                    Pre-sorting
+                </button>
+            </h2>
+            <div id="collapsePreSorting" class="accordion-collapse collapse" aria-labelledby="headingPreSorting" data-bs-parent="#algorithmAccordion">
+                <div class="accordion-body">
+                    <h4>Description</h4>
+                    <p>Pre-sorting алгоритм для поиска аномалий в многомерных временных рядах основан на идее матричного профиля и позволяет решать задачу поиска аномалий в K в N измерениях.</p>
+                    <p>Для каждого измерения ряда алгоритмы вычисляет расстояние между всеми его подпоследовательностями. После этого он сначала сортирует по убыванию значения расстояние для каждой пары подпоследовательностей по всем измерениями, а затем для каждой подпоследовательности сортирует получившиеся значения по убыванию и формирует из их минимумов матрицу, первая строка которой определяет аномалии, возникающее хотя бы в одном измерении, следующая строка хотя бы в двух и тд.</p>
+                    <h4>Technical requirements</h4>
+                    <p>Данный алгоритм работает за O(n * n * d * log d * m), где n - длина ряда, d - количество его измерений, m - длина подпоследовательности. Но так как для данного алгоритма считает тензор размером n * n * d, то алгоритм MASS, позволяющий эффективно вычислить z-нормализованные Евклидовы расстояния между подпоследовательностями. Таким образом в прямолинейной реализации данный алгоритм работает довольно долго.</p>
+                    <h4>Implementation references</h4>
+                    <p>На данный момент не существует реализаций данного алгоритма в открытом доступе, а статьи, в которых данный алгоритм освещается, не содержат решения задачи эффективного подсчета тензора n * n * d. В данном интерфейсе алгоритм вычисляется напрямую без оптемизаций через MASS.</p>
+                    <h4>Article references</h4>
+                    <p><a href="https://arxiv.org/pdf/2409.09298" target="_blank">Matrix Profile for Anomaly Detection on Multidimensional Time Series</a></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingPostSorting">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePostSorting" aria-expanded="false" aria-controls="collapsePostSorting">
+                    Post-sorting
+                </button>
+            </h2>
+            <div id="collapsePostSorting" class="accordion-collapse collapse" aria-labelledby="headingPostSorting" data-bs-parent="#algorithmAccordion">
+                <div class="accordion-body">
+                    <h4>Description</h4>
+                    <p>Post-sorting алгоритм для поиска аномалий в многомерных временных рядах представлен в той же статье, что и pre-sorting алгоритм, и позволяет решать задачу поиска аномалий в K в N измерениях, но с меньшей точностью.</p>
+                    <p>Для каждого измерения в данном алгоритме происходит подсчет матричного профиля, затем эти матричные профили объединяются в общую матрицу, где в i-й строке содержится матричный профиль для i-го измерения. После этого даннай матрица сортируется по столбцам. После сортировки первая строка становится чувствительной к аномалиям, одновременно возникающим в любом количестве измерений ряда, вторай строка чувствительна к аномалиям в минимум двух измерениях одновременно и тд.</p>
+                    <h4>Technical requirements</h4>
+                    <p>Данный алгоритм хоть и требует того же объема памяти что и pre-sorting, но позволяет сократить предварительные вычисления, так как в нем достаточно посчитать матричный профиль для кажого измерения, что позволяет использовать существующие эффективные алгоритмы.</p>
+                    <h4>Implementation references</h4>
+                    <p>В открытом доступе опять же не существует реализаций данного алгоритма, поэтому он был реализован в данном интерфейсе.</p>
+                    <h4>Article references</h4>
+                    <p><a href="https://arxiv.org/pdf/2409.09298" target="_blank">Matrix Profile for Anomaly Detection on Multidimensional Time Series</a></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingMSTUMP">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMSTUMP" aria-expanded="false" aria-controls="collapseMSTUMP">
+                    MSTUMP
+                </button>
+            </h2>
+            <div id="collapseMSTUMP" class="accordion-collapse collapse" aria-labelledby="headingMSTUMP" data-bs-parent="#algorithmAccordion">
+                <div class="accordion-body">
+                    <h4>Description</h4>
+                    <p>Алгоритм MSTUMP представляет из себя матричный профиль для многомерного ряда, подсчитанный особым образом. Функция MSTUMP для ряда размерности D возвращает D матричных профилей, в первом из которых для каждого окна выбирается минимальное значение матричного профиля для всех измерений ряда. Во втором матричном профиле берется среднее из значений двух рядов с минимальными значениями z-нормализованных Евклидовых расстояний и тд. В последнем матричном профиле берется среднее из всех значений для конкретного окна по всем измерениям.</p>
+                    <p>Официально разработанного алгоритма, использующего данный подход не существует, но на данном сервисе MSTUMP используется для простого алгоритма поиска аномалий, который использует последний возвращаемый им матричный профиль и ищет в нем наибольшие значения. Такой алгоритм является эффективным для так называемых N из N аномалий, то есть аномалий, которые присутствуют во всех измерениях ряда. С остальными типами аномалий такой алгоритм работает не эффективно.</p>
+                    <h4>Technical requirements</h4>
+                    <p>Алгоритм MSTUMP эффективно работает на всех видах устройств и не требует особых характеристик железа.</p>
+                    <h4>Implementation references</h4>
+                    <p>MSTUMP реализован в модуле Python <a href="https://stumpy.readthedocs.io/en/latest/Tutorial_STUMPY_Basics.html" target="_blank">STUMPY</a>, а алгоритм поиска аномалий, описанный выше, реализован внутри данного сервиса.</p>
+                    <h4>Article references</h4>
+                    <p><a href="https://www.cs.ucr.edu/~eamonn/Motif_Discovery_ICDM.pdf" target="_blank">Matrix Profile VI: Meaningful Multidimensional Motif Discovery </a></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingFLUSS">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFLUSS" aria-expanded="false" aria-controls="collapseFLUSS">
+                    FLUSS
+                </button>
+            </h2>
+            <div id="collapseFLUSS" class="accordion-collapse collapse" aria-labelledby="headingFLUSS" data-bs-parent="#algorithmAccordion">
+                <div class="accordion-body">
+                    <h4>Description</h4>
+                    <p>Алгоритм FLUSS (Fast Low-cost Unipotent Semantic Segmentation) это алгоритм, использующий матричный профиль с дополнительными надстройками для сегментации ряда и, по совместительству, его точек изменения.</p>
+                    <p>Данный алгоритм вместо значений минимального расстояния между подпоследовательностями во временном ряде для каждого начала подпоследовательности хранит индекс начала ближайшей по z-нормализованному евклидову расстоянию подпоследовательности. Точка, которая лежит между наименьшим количеством таких пар (под парой подразумевается начала данной подпоследовательности и ближайшей к ней подпоследовательности), и является точкой изменения ряда.</p>
+                    <h4>Technical requirements</h4>
+                    <p>Алгоритм FLUSS эффективно работает на всех видах устройств и не требует особых характеристик железа.</p>
+                    <h4>Implementation references</h4>
+                    <p>Эффективная реализация данного алгоритма содержится в модуле Python <a href="https://stumpy.readthedocs.io/en/latest/Tutorial_STUMPY_Basics.html" target="_blank">STUMPY</a>, а также в модуле <a href="https://github.com/matrix-profile-foundation/matrixprofile" target="_blank">matrixprofile</a>. На данном сервисе используется только модуль STUMPY.</p>
+                    <h4>Article references</h4>
+                    <p><a href="https://www.cs.ucr.edu/~eamonn/Segmentation_ICDM.pdf" target="_blank">Matrix Profile VIII: Domain Agnostic Online Semantic Segmentation at Superhuman Performance Levels</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

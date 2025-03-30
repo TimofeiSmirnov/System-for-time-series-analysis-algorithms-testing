@@ -19,6 +19,9 @@
         <label for="k">Dimension:</label>
         <input type="number" name="k" id="k" class="form-control" value="1" min="1" max="100" required>
 
+        <label for="number_of_segments_gen">Number of regions in time series to look for:</label>
+        <input type="number" name="number_of_segments_gen" id="number_of_segments_gen" class="form-control" value="2" min="2" max="100" required>
+
         <label for="avg_pattern_length">Average pattern length in the series:</label>
         <input type="number" name="avg_pattern_length" id="avg_pattern_length" class="form-control" value="50" min="50" max="1000000" step="1" required>
 
@@ -51,6 +54,8 @@
                 {% endif %}
             {% endfor %}
         </select>
+        <label for="number_of_segments_choose">Number of regions in time series to look for:</label>
+        <input type="number" name="number_of_segments_choose" id="number_of_segments_choose" class="form-control" value="2" min="2" max="100" required>
         <label for="m_choose">Matrix profile window width:</label>
         <input type="number" name="m_choose" id="m_choose" class="form-control" value="50" min="2" max="100000" required>
         <button type="submit" class="btn btn-primary mt-2">Select</button>
@@ -60,6 +65,8 @@
         <h3>Upload your own time series</h3>
         <label for="file">The file must have a CSV extension and consist of at least 2 columns, the first of which represents the time points, and the second and subsequent columns represent the values of the series elements. The series should not contain any missing values.</label>
         <input type="file" name="file" id="file" class="form-control" accept=".csv" required>
+        <label for="number_of_segments_load">Number of regions in time series to look for:</label>
+        <input type="number" name="number_of_segments_load" id="number_of_segments_load" class="form-control" value="2" min="2" max="100" required>
         <label for="m_load">Matrix profile window width:</label>
         <input type="number" name="m_load" id="m_load" class="form-control" value="50" min="2" max="100000" required>
         <button type="submit" class="btn btn-primary mt-2">Upload</button>

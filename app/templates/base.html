@@ -19,22 +19,25 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main') }}">Main matrix profile page</a>
+                        <a class="nav-link" href="{{ url_for('index') }}">Main matrix profile page</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('index') }}">Matrix Profile view</a>
+                        <a class="nav-link" href="{{ url_for('main') }}">Matrix Profile view</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('ad_analysis') }}">Anomaly detection for 1D series</a>
+                        <a class="nav-link" href="{{ url_for('ad_analysis') }}">Anomaly detection for 1D</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('cpd_analysis') }}">CPD for 1D series</a>
+                        <a class="nav-link" href="{{ url_for('cpd_analysis') }}">CPD for 1D</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('multidim_ad_analysis') }}">Anomaly detection for ND series</a>
+                        <a class="nav-link" href="{{ url_for('multidim_ad_analysis') }}">Anomaly detection for ND</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('algorithm_test') }}">Test algorithms</a>
+                        <a class="nav-link" href="{{ url_for('ad_test') }}">Test AD algorithms</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('cpd_test') }}">Test CPD algorithms</a>
                     </li>
                 </ul>
             </div>

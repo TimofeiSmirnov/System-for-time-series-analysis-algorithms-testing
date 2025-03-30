@@ -15,11 +15,11 @@ def init_routes(app):
     checker = Checker()
 
     @app.route("/")
-    def main():
+    def index():
         return render_template("main_page.html")
 
     @app.route("/matrix_profile", methods=["GET", "POST"])
-    def index():
+    def main():
         """Главная страница с возможностью выбора ряда и генерации матричного профиля по нему"""
         plot_html = None
         available_series = data_controller.get_available_series()
@@ -250,6 +250,7 @@ def init_routes(app):
                 if 'n' in request.form and 'k' in request.form:
                     time_series_length = int(request.form["n"])
                     time_series_dim = int(request.form["k"])
+                    number_of_regimes = int(request.form["number_of_segments_gen"])
                     avg_pattern_length = int(request.form["avg_pattern_length"])
                     avg_amplitude = float(request.form["avg_amplitude"])
                     default_variance = float(request.form["default_variance"])
@@ -278,10 +279,12 @@ def init_routes(app):
                 elif 'series' in request.form:
                     requested_time_series_to_load = request.form["series"]
                     file_name = requested_time_series_to_load
+                    number_of_regimes = int(request.form["number_of_segments_choose"])
                     window_length = int(request.form["m_choose"])
                     timestamps, time_series = data_controller.get_series(requested_time_series_to_load)
                 elif 'file' in request.files:
                     uploaded_file = request.files['file']
+                    number_of_regimes = int(request.form["number_of_segments_load"])
                     window_length = int(request.form["m_load"])
 
                     if uploaded_file:
@@ -421,8 +424,8 @@ def init_routes(app):
         return render_template("multidim_ad_analysis.html", plot_html=plot_html, available_series=available_series,
                                error=error)
 
-    @app.route("/algorithm_test", methods=["GET", "POST"])
-    def algorithm_test():
+    @app.route("/ad_test", methods=["GET", "POST"])
+    def ad_test():
         plot_html = None
         threshold = 99.9
         window_length = 100
@@ -438,29 +441,46 @@ def init_routes(app):
                     window_length = int(request.form["window_length_damp"])
                     learn_window_length = int(request.form["learn_window_length_damp"])
                     anomaly_part_of_window = float(request.form["anomaly_marks_damp"])
-                    mean_results, test_results = checker.check("damp", threshold, window_length, anomaly_part_of_window, learn_window_length)
+                    mean_results, test_results = checker.check_ad("damp", threshold, window_length, anomaly_part_of_window, learn_window_length)
                 elif "threshold_pre" in request.form:
                     threshold = float(request.form["threshold_pre"])
                     window_length = int(request.form["window_length_pre"])
                     anomaly_part_of_window = float(request.form["anomaly_marks_pre"])
-                    mean_results, test_results = checker.check("pre_sorting", threshold, window_length, anomaly_part_of_window)
+                    mean_results, test_results = checker.check_ad("pre_sorting", threshold, window_length, anomaly_part_of_window)
                 elif "threshold_post" in request.form:
                     threshold = float(request.form["threshold_post"])
                     window_length = int(request.form["window_length_post"])
                     anomaly_part_of_window = float(request.form["anomaly_marks_post"])
-                    mean_results, test_results = checker.check("post_sorting", threshold, window_length, anomaly_part_of_window)
+                    mean_results, test_results = checker.check_ad("post_sorting", threshold, window_length, anomaly_part_of_window)
                 elif "threshold_mstump" in request.form:
                     threshold = float(request.form["threshold_mstump"])
                     window_length = int(request.form["window_length_mstump"])
                     anomaly_part_of_window = float(request.form["anomaly_marks_mstump"])
-                    mean_results, test_results = checker.check("mstump", threshold, window_length, anomaly_part_of_window)
+                    mean_results, test_results = checker.check_ad("mstump", threshold, window_length, anomaly_part_of_window)
                 elif "threshold_dumb" in request.form:
                     threshold = float(request.form["threshold_dumb"])
                     window_length = int(request.form["window_length_dumb"])
                     anomaly_part_of_window = float(request.form["anomaly_marks_dumb"])
-                    mean_results, test_results = checker.check("dumb", threshold, window_length, anomaly_part_of_window)
-                return render_template("test_algorithms.html", test_results=test_results, mean_results=mean_results, error=error)
+                    mean_results, test_results = checker.check_ad("dumb", threshold, window_length, anomaly_part_of_window)
+                return render_template("test_ad.html", test_results=test_results, mean_results=mean_results, error=error)
         except Exception as e:
             error = e
-            return render_template("test_algorithms.html", test_results=test_results, mean_results=mean_results, error=error)
-        return render_template("test_algorithms.html", test_results=test_results, mean_results=mean_results, error=error)
+            return render_template("test_ad.html", test_results=test_results, mean_results=mean_results, error=error)
+        return render_template("test_ad.html", test_results=test_results, mean_results=mean_results, error=error)
+
+    @app.route("/cpd_test", methods=["GET", "POST"])
+    def cpd_test():
+        checker = Checker()
+        test_results = None
+        mean_results = None
+        error = None
+
+        try:
+            if request.method == "POST":
+                window_length = int(request.form["window_length_cpd"])
+                mean_results, test_results = checker.check_cpd(window_length)
+                return render_template("test_cpd.html", test_results=test_results, mean_results=mean_results, error=error)
+        except Exception as e:
+            error = e
+            return render_template("test_cpd.html", test_results=test_results, mean_results=mean_results, error=error)
+        return render_template("test_cpd.html", test_results=test_results, mean_results=mean_results, error=error)
