@@ -14,7 +14,11 @@ def init_routes(app):
     data_controller = DataController()
     checker = Checker()
 
-    @app.route("/", methods=["GET", "POST"])
+    @app.route("/")
+    def main():
+        return render_template("main_page.html")
+
+    @app.route("/matrix_profile", methods=["GET", "POST"])
     def index():
         """Главная страница с возможностью выбора ряда и генерации матричного профиля по нему"""
         plot_html = None
@@ -24,6 +28,7 @@ def init_routes(app):
         time_series = []
         matrix_profile = []
         file_name = ""
+        error = None
 
         try:
             if request.method == "POST":
@@ -37,13 +42,13 @@ def init_routes(app):
                     variance_amplitude = float(request.form["variance_amplitude"])
 
                     if time_series_length < 100:
-                        raise ValueError("Слишком короткий временной ряд")
+                        raise ValueError("The time series is too short")
                     if time_series_length > 1000000:
-                        raise ValueError("Слишком длинный ряд")
+                        raise ValueError("The time series is too long")
                     if time_series_dim < 1:
-                        raise ValueError("Ряд должен быть размерности не меньше 1")
+                        raise ValueError("The series must have at least dimension 1")
                     if time_series_dim > 100:
-                        raise ValueError("Ряд не должен быть размерности более 100")
+                        raise ValueError("The series must not exceed 100 dimensions")
 
                     timestamps, time_series = data_controller.generate_series(
                         time_series_length,
@@ -60,11 +65,12 @@ def init_routes(app):
                         window_length = int(request.form["m_for_gen"])
 
                         if matrix_profile_algorithm not in all_algorithms_to_calculate_mp:
-                            raise ValueError("Такого алгоритма вычиселния не существует")
+                            raise ValueError("The specified algorithm does not exist")
                         if window_length < 1:
-                            raise ValueError("Размер окна должен быть больше 1")
+                            raise ValueError("Window length must be greater than 1")
 
-                        matrix_profile, execution_time = generate_mp(matrix_profile_algorithm, time_series, window_length)
+                        matrix_profile, execution_time = generate_mp(matrix_profile_algorithm, time_series,
+                                                                     window_length)
                 elif 'series' in request.form:
                     requested_time_series_to_load = request.form["series"]
                     file_name = requested_time_series_to_load
@@ -74,11 +80,12 @@ def init_routes(app):
                         window_length = int(request.form["m_for_choose"])
 
                         if matrix_profile_algorithm not in all_algorithms_to_calculate_mp:
-                            raise ValueError("Такого алгоритма вычиселния не существует")
+                            raise ValueError("The specified algorithm does not exist")
                         if window_length < 1:
-                            raise ValueError("Размер окна должен быть больше 1")
+                            raise ValueError("Window length must be greater than 1")
 
-                        matrix_profile, execution_time = generate_mp(matrix_profile_algorithm, time_series, window_length)
+                        matrix_profile, execution_time = generate_mp(matrix_profile_algorithm, time_series,
+                                                                     window_length)
                 elif 'file' in request.files:
                     uploaded_file = request.files['file']
                     if uploaded_file:
@@ -87,19 +94,23 @@ def init_routes(app):
                         timestamps = loaded_time_series.iloc[:, 0]
                         for col in loaded_time_series.columns:
                             if loaded_time_series[col].isnull().values.any():
-                                raise ValueError("Загруженный ряд содержит пропущенные значения или NaN.")
+                                raise ValueError("The uploaded series contains missing or NaN values.")
                         df_filtered = loaded_time_series.drop(loaded_time_series.columns[0], axis=1)
                         time_series = [df_filtered[col].tolist() for col in df_filtered.columns]
 
                     if "algorithm_for_load" in request.form and "m_for_load" in request.form:
                         matrix_profile_algorithm = request.form["algorithm_for_load"]
                         window_length = int(request.form["m_for_load"])
-                        matrix_profile, execution_time = generate_mp(matrix_profile_algorithm, time_series, window_length)
-                plot_html = visualize_time_series_with_matrix_profile(timestamps, time_series, matrix_profile, file_name)
-                return render_template("index.html", plot_html=plot_html, available_series=available_series)
+                        matrix_profile, execution_time = generate_mp(matrix_profile_algorithm, time_series,
+                                                                     window_length)
+                plot_html = visualize_time_series_with_matrix_profile(timestamps, time_series, matrix_profile,
+                                                                      file_name)
+                return render_template("index.html", plot_html=plot_html, available_series=available_series,
+                                       error=error)
         except ValueError as e:
-            return render_template("index.html", plot_html=plot_html, available_series=available_series)
-        return render_template("index.html", plot_html=plot_html, available_series=available_series)
+            error = e
+            return render_template("index.html", plot_html=plot_html, available_series=available_series, error=error)
+        return render_template("index.html", plot_html=plot_html, available_series=available_series, error=error)
 
     @app.route("/ad_analysis", methods=["GET", "POST"])
     def ad_analysis():
@@ -114,6 +125,7 @@ def init_routes(app):
         window_length_damp = 300
         learn_length_damp = 400
         file_name = ""
+        error = None
 
         try:
             if request.method == "POST":
@@ -127,13 +139,13 @@ def init_routes(app):
                     variance_amplitude = float(request.form["variance_amplitude"])
 
                     if time_series_length < 100:
-                        raise ValueError("Слишком короткий временной ряд")
+                        raise ValueError("The time series is too short")
                     if time_series_length > 1000000:
-                        raise ValueError("Слишком длинный ряд")
+                        raise ValueError("The time series is too long")
                     if time_series_dim < 1:
-                        raise ValueError("Ряд должен быть размерности не меньше 1")
+                        raise ValueError("The series must have at least dimension 1")
                     if time_series_dim > 100:
-                        raise ValueError("Ряд не должен быть размерности более 100")
+                        raise ValueError("The series must not exceed 100 dimensions")
 
                     timestamps, time_series = data_controller.generate_series(
                         time_series_length,
@@ -156,7 +168,7 @@ def init_routes(app):
                         # anomaly_indexes = algorithm_applier.apply_algorithm_1d(matrix_profile_algorithm, time_series[0], threshold, window_length)
                 elif 'series' in request.form:
                     requested_time_series_to_load = request.form["series"]
-                    file_name=requested_time_series_to_load
+                    file_name = requested_time_series_to_load
                     timestamps, time_series = data_controller.get_series(requested_time_series_to_load)
 
                     if "algorithm_for_choose" in request.form and "threshold_for_choose" in request.form:
@@ -176,11 +188,11 @@ def init_routes(app):
                         file_stream = io.BytesIO(uploaded_file.read())
                         loaded_time_series = pd.read_csv(file_stream)
                         if loaded_time_series.shape[1] > 2:
-                            raise ValueError("Данный ряд не одномерный")
+                            raise ValueError("The series is not one-dimensional")
                         timestamps = loaded_time_series.iloc[:, 0]
                         for col in loaded_time_series.columns:
                             if loaded_time_series[col].isnull().values.any():
-                                raise ValueError("Загруженный ряд содержит пропущенные значения или NaN.")
+                                raise ValueError("The uploaded series contains missing or NaN values.")
                         df_filtered = loaded_time_series.drop(loaded_time_series.columns[0], axis=1)
                         time_series = [df_filtered[col].tolist() for col in df_filtered.columns]
 
@@ -194,28 +206,32 @@ def init_routes(app):
                             learn_length_damp = int(request.form["learn_length_damp_load"])
 
                 if algorithm is None:
-                    raise ValueError("Алгоритм вычисления матричного профиля должен быть определен")
+                    raise ValueError("The matrix profile algorithm must be specified")
                 if window_length is None:
-                    raise ValueError("Длина окна матричного профиля должен быть определена")
+                    raise ValueError("The matrix profile window length must be specified")
                 if threshold is None:
-                    raise ValueError("Порог должен быть определен")
+                    raise ValueError("The threshold must be specified")
                 if algorithm not in algorithm_applier.algorithms_for_1d_ad:
-                    raise ValueError("Такого алгоритма вычиселния не существует")
+                    raise ValueError("The specified algorithm does not exist")
                 if window_length < 1:
-                    raise ValueError("Размер окна должен быть больше 1")
+                    raise ValueError("Window length must be greater than 1")
                 if threshold < 0:
-                    raise ValueError("Порог не может быть меньше 0")
+                    raise ValueError("Threshold cannot be less than 0")
                 if threshold > 100:
-                    raise ValueError("Порог не может быть больше 100")
+                    raise ValueError("Threshold cannot be greater than 100")
                 if window_length_damp > learn_length_damp:
-                    raise ValueError("Длина окна для DAMP должна быть меньше длины обучающей выборки")
+                    raise ValueError("DAMP window length must be less than the learning sample length")
 
-                anomaly_indexes = algorithm_applier.apply_algorithm_1d(algorithm, time_series[0], threshold, window_length, [window_length_damp, learn_length_damp])
+                anomaly_indexes = algorithm_applier.apply_algorithm_1d(algorithm, time_series[0], threshold,
+                                                                       window_length,
+                                                                       [window_length_damp, learn_length_damp])
                 plot_html = visualize_time_series_ad(timestamps, time_series[0], anomaly_indexes, file_name)
                 return render_template("ad_analysis.html", plot_html=plot_html, available_series=available_series)
         except ValueError as e:
-            return render_template("ad_analysis.html", plot_html=plot_html, available_series=available_series)
-        return render_template("ad_analysis.html", plot_html=plot_html, available_series=available_series)
+            error = e
+            return render_template("ad_analysis.html", plot_html=plot_html, available_series=available_series,
+                                   error=error)
+        return render_template("ad_analysis.html", plot_html=plot_html, available_series=available_series, error=error)
 
     @app.route("/cpd_analysis", methods=["GET", "POST"])
     def cpd_analysis():
@@ -227,6 +243,7 @@ def init_routes(app):
         number_of_regimes = 2
         window_length = None
         file_name = ""
+        error = None
 
         try:
             if request.method == "POST":
@@ -240,13 +257,13 @@ def init_routes(app):
                     variance_amplitude = float(request.form["variance_amplitude"])
 
                     if time_series_length < 100:
-                        raise ValueError("Слишком короткий временной ряд")
+                        raise ValueError("The time series is too short")
                     if time_series_length > 1000000:
-                        raise ValueError("Слишком длинный ряд")
+                        raise ValueError("The time series is too long")
                     if time_series_dim < 1:
-                        raise ValueError("Ряд должен быть размерности не меньше 1")
+                        raise ValueError("The series must have at least dimension 1")
                     if time_series_dim > 100:
-                        raise ValueError("Ряд не должен быть размерности более 100")
+                        raise ValueError("The series must not have more than 100 dimensions")
 
                     window_length = int(request.form["m_gen"])
                     timestamps, time_series = data_controller.generate_series(
@@ -258,7 +275,6 @@ def init_routes(app):
                         variance_pattern_length,
                         variance_amplitude
                     )
-
                 elif 'series' in request.form:
                     requested_time_series_to_load = request.form["series"]
                     file_name = requested_time_series_to_load
@@ -273,41 +289,45 @@ def init_routes(app):
                         loaded_time_series = pd.read_csv(file_stream)
 
                         if loaded_time_series.shape[1] > 2:
-                            raise ValueError("Данный ряд не одномерный")
+                            raise ValueError("The series is not univariate")
 
                         timestamps = loaded_time_series.iloc[:, 0]
 
                         for col in loaded_time_series.columns:
                             if loaded_time_series[col].isnull().values.any():
-                                raise ValueError("Загруженный ряд содержит пропущенные значения или NaN.")
+                                raise ValueError("The uploaded series contains missing values or NaNs.")
 
                         df_filtered = loaded_time_series.drop(loaded_time_series.columns[0], axis=1)
                         time_series = [df_filtered[col].tolist() for col in df_filtered.columns]
 
                 if window_length is None:
-                    raise ValueError("Длина окна матричного профиля должен быть определена")
+                    raise ValueError("The window length for the matrix profile must be specified")
                 if window_length < 1:
-                    raise ValueError("Размер окна должен быть больше 1")
+                    raise ValueError("The window size must be greater than 1")
 
                 arc_curve = arc_curve_calculator(time_series[0], window_length, number_of_regimes)
                 plot_html = visualize_time_series_with_fluss(timestamps, time_series, arc_curve, file_name)
-                return render_template("cpd_analysis.html", plot_html=plot_html, available_series=available_series)
-        except ValueError:
-            return render_template("cpd_analysis.html", plot_html=plot_html, available_series=available_series)
-        return render_template("cpd_analysis.html", plot_html=plot_html, available_series=available_series)
+                return render_template("cpd_analysis.html", plot_html=plot_html, available_series=available_series,
+                                       error=error)
+        except ValueError as e:
+            error = e
+            return render_template("cpd_analysis.html", plot_html=plot_html, available_series=available_series,
+                                   error=error)
+        return render_template("cpd_analysis.html", plot_html=plot_html, available_series=available_series, error=error)
 
     @app.route("/multidim_ad_analysis", methods=["GET", "POST"])
     def multidim_ad_analysis():
         """Страница для анализа алгоритмов Anomaly Detection (AD)"""
         plot_html = None
         available_series = data_controller.get_available_series()
-        all_algorithms_for_ad = ["pre_sorting", "post_sorting"]
+        all_algorithms_for_ad = ["pre_sorting", "post_sorting", "mstump"]
         timestamps = []
         time_series = []
         matrix_profile_algorithm = None
         threshold = None
         window_length = None
         file_name = ""
+        error = None
 
         try:
             if request.method == "POST":
@@ -321,13 +341,13 @@ def init_routes(app):
                     variance_amplitude = float(request.form["variance_amplitude"])
 
                     if time_series_length < 100:
-                        raise ValueError("Слишком короткий временной ряд")
+                        raise ValueError("The time series is too short")
                     if time_series_length > 1000000:
-                        raise ValueError("Слишком длинный ряд")
+                        raise ValueError("The time series is too long")
                     if time_series_dim < 1:
-                        raise ValueError("Ряд должен быть размерности не меньше 1")
+                        raise ValueError("The series must have at least dimension 1")
                     if time_series_dim > 100:
-                        raise ValueError("Ряд не должен быть размерности более 100")
+                        raise ValueError("The series must not have more than 100 dimensions")
 
                     timestamps, time_series = data_controller.generate_series(
                         time_series_length,
@@ -363,7 +383,7 @@ def init_routes(app):
 
                         for col in loaded_time_series.columns:
                             if loaded_time_series[col].isnull().values.any():
-                                raise ValueError("Загруженный ряд содержит пропущенные значения или NaN.")
+                                raise ValueError("The uploaded series contains missing values or NaNs.")
 
                         time_series = [df_filtered[col].tolist() for col in df_filtered.columns]
 
@@ -373,27 +393,33 @@ def init_routes(app):
                         window_length = int(request.form["m_load"])
 
                 if matrix_profile_algorithm is None:
-                    raise ValueError("Алгоритм вычисления матричного профиля должен быть определен")
+                    raise ValueError("The matrix profile computation algorithm must be specified")
                 if window_length is None:
-                    raise ValueError("Длина окна матричного профиля должен быть определена")
+                    raise ValueError("The window length for the matrix profile must be specified")
                 if threshold is None:
-                    raise ValueError("Порог должен быть определен")
+                    raise ValueError("The threshold must be specified")
                 if matrix_profile_algorithm not in all_algorithms_for_ad:
-                    raise ValueError("Такого алгоритма вычиселния не существует")
+                    raise ValueError("The specified algorithm does not exist")
                 if window_length < 1:
-                    raise ValueError("Размер окна должен быть больше 1")
+                    raise ValueError("The window size must be greater than 1")
                 if threshold < 0:
-                    raise ValueError("Порог не может быть меньше 0")
+                    raise ValueError("The threshold cannot be less than 0")
                 if threshold > 100:
-                    raise ValueError("Порог не может быть больше 100")
+                    raise ValueError("The threshold cannot be greater than 100")
 
-                anomaly_indexes, matrix_profile = algorithm_applier.apply_algorithm_nd(matrix_profile_algorithm, time_series, threshold, window_length)
-                plot_html = visualize_time_series_ad_multidim(timestamps, time_series, anomaly_indexes, matrix_profile, file_name)
-                return render_template("multidim_ad_analysis.html", plot_html=plot_html, available_series=available_series)
+                anomaly_indexes, matrix_profile = algorithm_applier.apply_algorithm_nd(matrix_profile_algorithm,
+                                                                                       time_series, threshold,
+                                                                                       window_length)
+                plot_html = visualize_time_series_ad_multidim(timestamps, time_series, anomaly_indexes, matrix_profile,
+                                                              file_name)
+                return render_template("multidim_ad_analysis.html", plot_html=plot_html,
+                                       available_series=available_series, error=error)
         except ValueError as e:
-            print(e)
-            return render_template("multidim_ad_analysis.html", plot_html=plot_html, available_series=available_series)
-        return render_template("multidim_ad_analysis.html", plot_html=plot_html, available_series=available_series)
+            error = e
+            return render_template("multidim_ad_analysis.html", plot_html=plot_html, available_series=available_series,
+                                   error=error)
+        return render_template("multidim_ad_analysis.html", plot_html=plot_html, available_series=available_series,
+                               error=error)
 
     @app.route("/algorithm_test", methods=["GET", "POST"])
     def algorithm_test():
@@ -401,26 +427,40 @@ def init_routes(app):
         threshold = 99.9
         window_length = 100
         test_results = None
+        mean_results = None
+        error = None
+        anomaly_part_of_window = 0.5
+
         try:
             if request.method == "POST":
                 if "threshold_damp" in request.form:
                     threshold = float(request.form["threshold_damp"])
                     window_length = int(request.form["window_length_damp"])
                     learn_window_length = int(request.form["learn_window_length_damp"])
-                    test_results = checker.check("damp", threshold, window_length, learn_window_length)
+                    anomaly_part_of_window = float(request.form["anomaly_marks_damp"])
+                    mean_results, test_results = checker.check("damp", threshold, window_length, anomaly_part_of_window, learn_window_length)
                 elif "threshold_pre" in request.form:
                     threshold = float(request.form["threshold_pre"])
                     window_length = int(request.form["window_length_pre"])
-                    test_results = checker.check("pre_sorting", threshold, window_length)
+                    anomaly_part_of_window = float(request.form["anomaly_marks_pre"])
+                    mean_results, test_results = checker.check("pre_sorting", threshold, window_length, anomaly_part_of_window)
                 elif "threshold_post" in request.form:
                     threshold = float(request.form["threshold_post"])
                     window_length = int(request.form["window_length_post"])
-                    test_results = checker.check("post_sorting", threshold, window_length)
+                    anomaly_part_of_window = float(request.form["anomaly_marks_post"])
+                    mean_results, test_results = checker.check("post_sorting", threshold, window_length, anomaly_part_of_window)
+                elif "threshold_mstump" in request.form:
+                    threshold = float(request.form["threshold_mstump"])
+                    window_length = int(request.form["window_length_mstump"])
+                    anomaly_part_of_window = float(request.form["anomaly_marks_mstump"])
+                    mean_results, test_results = checker.check("mstump", threshold, window_length, anomaly_part_of_window)
                 elif "threshold_dumb" in request.form:
                     threshold = float(request.form["threshold_dumb"])
                     window_length = int(request.form["window_length_dumb"])
-                    test_results = checker.check("dumb", threshold, window_length)
-                return render_template("test_algorithms.html", test_results=test_results)
-        except ValueError:
-            return render_template("test_algorithms.html", test_results=test_results)
-        return render_template("test_algorithms.html", test_results=test_results)
+                    anomaly_part_of_window = float(request.form["anomaly_marks_dumb"])
+                    mean_results, test_results = checker.check("dumb", threshold, window_length, anomaly_part_of_window)
+                return render_template("test_algorithms.html", test_results=test_results, mean_results=mean_results, error=error)
+        except Exception as e:
+            error = e
+            return render_template("test_algorithms.html", test_results=test_results, mean_results=mean_results, error=error)
+        return render_template("test_algorithms.html", test_results=test_results, mean_results=mean_results, error=error)

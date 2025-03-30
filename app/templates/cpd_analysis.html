@@ -1,47 +1,47 @@
 {% extends "base.html" %}
 
-{% block title %}Анализ алгоритмов для CPD{% endblock %}
+{% block title %}Analysis of Algorithms for CPD{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Сегментация ряда с помощью матричного профиля:</h2>
+    <h2>Segmentation of the series using the Matrix Profile:</h2>
     <select class="form-select" onchange="toggleForms(this.value)">
-        <option value="">Выберите действие</option>
-        <option value="generate">Сгенерировать временной ряд</option>
-        <option value="select">Выбрать из существующих</option>
-        <option value="upload">Загрузить CSV-файл</option>
+        <option value="">Select an action</option>
+        <option value="generate">Generate time series</option>
+        <option value="select">Select from existing</option>
+        <option value="upload">Upload CSV file</option>
     </select>
 
     <form id="generateForm" method="post" onsubmit="generateSeries(event)" style="display: none;" class="mt-3">
-        <h3>Генерация временного ряда</h3>
-        <label for="n">Длина ряда:</label>
+        <h3>Generate time series</h3>
+        <label for="n">Series length:</label>
         <input type="number" name="n" id="n" class="form-control" value="300" min="100" max="1000000" required>
-        <label for="k">Размерность:</label>
+        <label for="k">Dimension:</label>
         <input type="number" name="k" id="k" class="form-control" value="1" min="1" max="100" required>
 
-        <label for="avg_pattern_length">Средняя длина паттернов в ряде:</label>
+        <label for="avg_pattern_length">Average pattern length in the series:</label>
         <input type="number" name="avg_pattern_length" id="avg_pattern_length" class="form-control" value="50" min="50" max="1000000" step="1" required>
 
-        <label for="avg_amplitude">Средняя амплитуда:</label>
+        <label for="avg_amplitude">Average amplitude:</label>
         <input type="number" name="avg_amplitude" id="avg_amplitude" class="form-control" value="1" min="0.01" max="10.0" step="0.01" required>
 
-        <label for="default_variance">Стандартная дисперсия амплитуда:</label>
+        <label for="default_variance">Standard deviation of amplitude:</label>
         <input type="number" name="default_variance" id="default_variance" class="form-control" value="0.1" min="0.01" max="10.0" step="0.01" required>
 
-        <label for="variance_pattern_length">Длина паттерна дисперсии:</label>
+        <label for="variance_pattern_length">Pattern length of variance:</label>
         <input type="number" name="variance_pattern_length" id="variance_pattern_length" class="form-control" value="50" min="10" max="1000000" step="1" required>
 
-        <label for="variance_amplitude">Амплитуда дисперсии:</label>
+        <label for="variance_amplitude">Variance amplitude:</label>
         <input type="number" name="variance_amplitude" id="variance_amplitude" class="form-control" value="1" min="0.1" max="10.0" step="0.1" required>
 
-        <label for="m_gen">Ширина окна матричного профиля:</label>
-        <input type="number" name="m_gen" id="m_gen" class="form-control" value="1" min="2" max="100000" required>
-        <button type="submit" class="btn btn-primary mt-2">Сгенерировать</button>
+        <label for="m_gen">Matrix profile window width:</label>
+        <input type="number" name="m_gen" id="m_gen" class="form-control" value="50" min="2" max="100000" required>
+        <button type="submit" class="btn btn-primary mt-2">Generate</button>
     </form>
 
     <form id="selectForm" method="post" style="display: none;" class="mt-3">
-        <h3>Выбор временного ряда</h3>
-        <label for="series">Доступные ряды:</label>
+        <h3>Select time series</h3>
+        <label for="series">Available series:</label>
         <select name="series" id="series" class="form-select">
             {% for file_name, meta in available_series.items() %}
                 {% if meta["dimensions"] <= 2 %}
@@ -51,18 +51,18 @@
                 {% endif %}
             {% endfor %}
         </select>
-        <label for="m_choose">Ширина окна матричного профиля:</label>
-        <input type="number" name="m_choose" id="m_choose" class="form-control" value="1" min="2" max="100000" required>
-        <button type="submit" class="btn btn-primary mt-2">Выбрать</button>
+        <label for="m_choose">Matrix profile window width:</label>
+        <input type="number" name="m_choose" id="m_choose" class="form-control" value="50" min="2" max="100000" required>
+        <button type="submit" class="btn btn-primary mt-2">Select</button>
     </form>
 
     <form id="uploadForm" method="post" enctype="multipart/form-data" style="display: none;" class="mt-3">
-        <h3>Загрузка временного ряда</h3>
-        <label for="file">Выберите CSV-файл:</label>
+        <h3>Upload your own time series</h3>
+        <label for="file">The file must have a CSV extension and consist of at least 2 columns, the first of which represents the time points, and the second and subsequent columns represent the values of the series elements. The series should not contain any missing values.</label>
         <input type="file" name="file" id="file" class="form-control" accept=".csv" required>
-        <label for="m_load">Ширина окна матричного профиля:</label>
-        <input type="number" name="m_load" id="m_load" class="form-control" value="1" min="2" max="100000" required>
-        <button type="submit" class="btn btn-primary mt-2">Загрузить</button>
+        <label for="m_load">Matrix profile window width:</label>
+        <input type="number" name="m_load" id="m_load" class="form-control" value="50" min="2" max="100000" required>
+        <button type="submit" class="btn btn-primary mt-2">Upload</button>
     </form>
 
     <div id="plotContainer" class="mt-4"></div>
@@ -70,13 +70,21 @@
     <div class="container mt-4">
         <section class="mt-4">
             <p>
-            <h2>Временной ряд с полученными аномалиями:</h2>
+            <h2>Time series with the detected anomalies:</h2>
             {% if plot_html %}
                 <div id="plot" class="mb-4">{{ plot_html|safe }}</div>
             {% else %}
-                <p>Ожидаем параметров.</p>
+                <p>Waiting for parameters.</p>
             {% endif %}
         </section>
+
+        {% if error is not none %}
+            <div class="container mt-3 d-flex justify-content-center">
+                <div class="alert alert-danger text-center" role="alert">
+                    <strong>{{ error }}</strong>
+                </div>
+            </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

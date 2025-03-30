@@ -2,55 +2,55 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Подсчет матричного профиля для временного ряда</h2>
+    <h2>Matrix Profile Calculation for Time Series</h2>
     <select class="form-select" onchange="toggleForms(this.value)">
-        <option value="">Выберите действие</option>
-        <option value="generate">Сгенерировать временной ряд</option>
-        <option value="select">Выбрать из существующих</option>
-        <option value="upload">Загрузить CSV-файл</option>
+        <option value="">Select Action</option>
+        <option value="generate">Generate Time Series</option>
+        <option value="select">Select from Existing</option>
+        <option value="upload">Upload CSV File</option>
     </select>
 
     <form id="generateForm" method="post" onsubmit="generateSeries(event)" style="display: none;" class="mt-3">
 
-        <h3>Генерация временного ряда</h3>
+        <h3>Generate Time Series</h3>
 
-        <label for="n">Длина ряда:</label>
+        <label for="n">Series Length:</label>
         <input class="form-control" id="n" max="1000000" min="100" name="n" required type="number" value="300">
 
-        <label for="k">Размерность:</label>
+        <label for="k">Dimensionality:</label>
         <input type="number" name="k" id="k" class="form-control" value="1" min="1" max="10" required onchange="updateAlgorithmOptions()">
 
-        <label for="avg_pattern_length">Средняя длина паттернов в ряде:</label>
+        <label for="avg_pattern_length">Average Pattern Length in Series:</label>
         <input type="number" name="avg_pattern_length" id="avg_pattern_length" class="form-control" value="50" min="50" max="1000000" step="1" required>
 
-        <label for="avg_amplitude">Средняя амплитуда:</label>
+        <label for="avg_amplitude">Average Amplitude:</label>
         <input type="number" name="avg_amplitude" id="avg_amplitude" class="form-control" value="1" min="0.01" max="10.0" step="0.01" required>
 
-        <label for="default_variance">Стандартная дисперсия амплитуда:</label>
+        <label for="default_variance">Default Amplitude Variance:</label>
         <input type="number" name="default_variance" id="default_variance" class="form-control" value="0.1" min="0.01" max="10.0" step="0.01" required>
 
-        <label for="variance_pattern_length">Длина паттерна дисперсии:</label>
+        <label for="variance_pattern_length">Variance Pattern Length:</label>
         <input type="number" name="variance_pattern_length" id="variance_pattern_length" class="form-control" value="50" min="10" max="1000000" step="1" required>
 
-        <label for="variance_amplitude">Амплитуда дисперсии:</label>
+        <label for="variance_amplitude">Variance Amplitude:</label>
         <input type="number" name="variance_amplitude" id="variance_amplitude" class="form-control" value="1" min="0.1" max="10.0" step="0.1" required>
 
-        <label for="algorithm_for_gen" class="form-label">Алгоритм вычисления матричного профиля:</label>
+        <label for="algorithm_for_gen" class="form-label">Matrix Profile Calculation Algorithm:</label>
         <select name="algorithm_for_gen" id="algorithm_for_gen" class="form-select">
             <option value="stomp">STOMP</option>
             <option value="scrimp++">SCRIMP++</option>
             <option value="stump">STUMP</option>
             <option value="mstump">MSTUMP</option>
         </select>
-        <label for="m_for_gen" class="form-label">Длина окна матричного профиля (m):</label>
+        <label for="m_for_gen" class="form-label">Matrix Profile Window Length (m):</label>
         <input type="number" name="m_for_gen" id="m_for_gen" class="form-control" value="64" min="1" required>
 
-        <button type="submit" class="btn btn-primary mt-2">Сгенерировать</button>
+        <button type="submit" class="btn btn-primary mt-2">Generate</button>
     </form>
 
     <form id="selectForm" method="post" style="display: none;" class="mt-3">
-        <h3>Выбор временного ряда</h3>
-        <label for="series">Доступные ряды:</label>
+        <h3>Select Time Series</h3>
+        <label for="series">Available Series:</label>
         <select name="series" id="series" class="form-select">
             {% for file_name, meta in available_series.items() %}
                 <option value="{{ file_name }}">
@@ -59,46 +59,54 @@
             {% endfor %}
         </select>
 
-        <label for="algorithm_for_choose" class="form-label">Алгоритм вычисления матричного профиля:</label>
+        <label for="algorithm_for_choose" class="form-label">Matrix Profile Calculation Algorithm:</label>
         <select name="algorithm_for_choose" id="algorithm_for_choose" class="form-select">
             <option value="stomp">STOMP</option>
             <option value="scrimp++">SCRIMP++</option>
             <option value="stump">STUMP</option>
             <option value="mstump">MSTUMP</option>
         </select>
-        <label for="m_for_choose" class="form-label">Длина окна матричного профиля (m):</label>
+        <label for="m_for_choose" class="form-label">Matrix Profile Window Length (m):</label>
         <input type="number" name="m_for_choose" id="m_for_choose" class="form-control" value="64" min="1" required>
 
-        <button type="submit" class="btn btn-primary mt-2">Выбрать</button>
+        <button type="submit" class="btn btn-primary mt-2">Select</button>
     </form>
 
     <form id="uploadForm" method="post" enctype="multipart/form-data" style="display: none;" class="mt-3">
-        <h3>Загрузка временного ряда</h3>
-        <label for="file">Выберите CSV-файл:</label>
+        <h3>Upload Your Own Time Series</h3>
+        <label for="file">The file must be in CSV format and consist of at least 2 columns: the first representing time points, and the second and subsequent columns representing series values. The series must not contain missing values.</label>
         <input type="file" name="file" id="file" class="form-control" accept=".csv" required>
 
-        <label for="algorithm_for_load" class="form-label">Алгоритм вычисления матричного профиля:</label>
+        <label for="algorithm_for_load" class="form-label">Matrix Profile Calculation Algorithm:</label>
         <select name="algorithm_for_load" id="algorithm_for_load" class="form-select">
             <option value="stomp">STOMP</option>
             <option value="scrimp++">SCRIMP++</option>
             <option value="stump">STUMP</option>
             <option value="mstump">MSTUMP</option>
         </select>
-        <label for="m_for_load" class="form-label">Длина окна матричного профиля (m):</label>
+        <label for="m_for_load" class="form-label">Matrix Profile Window Length (m):</label>
         <input type="number" name="m_for_load" id="m_for_load" class="form-control" value="64" min="1" required>
 
-        <button type="submit" class="btn btn-primary mt-2">Загрузить</button>
+        <button type="submit" class="btn btn-primary mt-2">Upload</button>
     </form>
 
     <div id="plotContainer" class="mt-4"></div>
 
     <section class="mt-4">
         <p>
-        <h2>Временной ряд с полученными аномалиями:</h2>
+        <h2>Time Series with Detected Anomalies:</h2>
         {% if plot_html %}
             <div id="plot" class="mb-4">{{ plot_html|safe }}</div>
         {% else %}
-            <p>Ожидаем параметров.</p>
+            <p>Awaiting parameters.</p>
+        {% endif %}
+
+        {% if error is not none %}
+            <div class="container mt-3 d-flex justify-content-center">
+                <div class="alert alert-danger text-center" role="alert">
+                    <strong>{{ error }}</strong>
+                </div>
+            </div>
         {% endif %}
     </section>
 </div>

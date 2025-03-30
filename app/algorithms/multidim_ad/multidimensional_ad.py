@@ -95,6 +95,26 @@ def multidimensional_ad_pre_sorting_for_test(time_series, threshold, m):
     return anomaly_indices
 
 
+def multidimensional_ad_mstump(time_series, threshold, m):
+    """Детектинг аномалий в многомерных временных рядах с MSTUMP"""
+    matrix_profile = stumpy.mstump(time_series, m)[0]
+    last_mp = matrix_profile[-1]
+    threshold = np.percentile(last_mp, threshold)
+    above_threshold = last_mp > threshold
+    anomaly_indices = np.where(above_threshold)[0]
+    return anomaly_indices, matrix_profile
+
+
+def multidimensional_ad_mstump_for_test(time_series, threshold, m):
+    """Детектинг аномалий в многомерных временных рядах с MSTUMP"""
+    matrix_profile = stumpy.mstump(time_series, m)[0]
+    last_mp = matrix_profile[-1]
+    threshold = np.percentile(last_mp, threshold)
+    above_threshold = last_mp > threshold
+    anomaly_indices = np.where(above_threshold)[0]
+    return anomaly_indices
+
+
 # def multidimensional_ad_with_kdps(time_series, threshold, m):
 #     """Вычисляет все матричные профили и сортирует их в убывающем порядке."""
 #
