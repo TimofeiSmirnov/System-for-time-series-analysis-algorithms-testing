@@ -13,8 +13,9 @@ def create_app():
     app.config.from_object(Config)
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-    app = create_app()
-
     init_routes(app)
 
     return app
+
+
+app = create_app()
