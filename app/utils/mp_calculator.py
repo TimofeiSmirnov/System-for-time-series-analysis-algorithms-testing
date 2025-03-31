@@ -1,7 +1,6 @@
 import time
 import stumpy
 from matrixprofile import matrixProfile
-from dask.distributed import Client
 import numpy as np
 
 
