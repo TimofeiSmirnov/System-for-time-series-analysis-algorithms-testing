@@ -241,7 +241,7 @@ class Checker:
 
                 counter_of_files += 1
             except Exception:
-                raise Exception
+                raise ValueError(f"Не удалось открыть файл{file_name}")
 
         for metric in summarised_results.keys():
             summarised_results[metric] /= counter_of_files

@@ -1,6 +1,6 @@
 import io
 import pandas as pd
-from flask import render_template, request, current_app
+from flask import render_template, request, current_app, redirect, url_for
 from app.algorithms.apply_algorithms import ApplyAnomalyDetectionAlgorithms
 from app.data_controller.data_controller import DataController
 from app.utils.mp_calculator import generate_mp, arc_curve_calculator
@@ -13,6 +13,10 @@ def init_routes(app):
     algorithm_applier = ApplyAnomalyDetectionAlgorithms()
     data_controller = DataController()
     checker = Checker()
+
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return redirect(url_for('index'))
 
     @app.route("/")
     def index():
@@ -44,13 +48,29 @@ def init_routes(app):
                     variance_amplitude = float(request.form["variance_amplitude"])
 
                     if time_series_length < 100:
-                        raise ValueError("The time series is too short")
+                        raise ValueError("The time series is too short (should be at least 100).")
                     if time_series_length > 1000000:
-                        raise ValueError("The time series is too long")
+                        raise ValueError("The time series is too long (should not exceed 1,000,000).")
                     if time_series_dim < 1:
-                        raise ValueError("The series must have at least dimension 1")
+                        raise ValueError("The series must have at least dimension 1.")
                     if time_series_dim > 100:
-                        raise ValueError("The series must not exceed 100 dimensions")
+                        raise ValueError("The series must not exceed 100 dimensions.")
+                    if avg_pattern_length < 10:
+                        raise ValueError("Average pattern length must be at least 10.")
+                    if avg_pattern_length > time_series_length:
+                        raise ValueError(
+                            f"Average pattern length cannot exceed the length of the time series ({time_series_length}).")
+                    if avg_amplitude <= 0:
+                        raise ValueError("Average amplitude must be greater than 0.")
+                    if default_variance <= 0:
+                        raise ValueError("Default variance must be greater than 0.")
+                    if variance_pattern_length < 10:
+                        raise ValueError("Variance pattern length must be at least 10.")
+                    if variance_pattern_length > time_series_length:
+                        raise ValueError(
+                            f"Variance pattern length cannot exceed the length of the time series ({time_series_length}).")
+                    if variance_amplitude <= 0:
+                        raise ValueError("Variance amplitude must be greater than 0.")
 
                     timestamps, time_series = data_controller.generate_series(
                         time_series_length,
@@ -105,6 +125,7 @@ def init_routes(app):
                         window_length = int(request.form["m_for_load"])
                         matrix_profile, execution_time = generate_mp(matrix_profile_algorithm, time_series,
                                                                      window_length)
+
                 plot_html = visualize_time_series_with_matrix_profile(timestamps, time_series, matrix_profile,
                                                                       file_name)
                 return render_template("index.html", plot_html=plot_html, available_series=available_series,
@@ -143,13 +164,29 @@ def init_routes(app):
                     variance_amplitude = float(request.form["variance_amplitude"])
 
                     if time_series_length < 100:
-                        raise ValueError("The time series is too short")
+                        raise ValueError("The time series is too short (should be at least 100).")
                     if time_series_length > 1000000:
-                        raise ValueError("The time series is too long")
+                        raise ValueError("The time series is too long (should not exceed 1,000,000).")
                     if time_series_dim < 1:
-                        raise ValueError("The series must have at least dimension 1")
+                        raise ValueError("The series must have at least dimension 1.")
                     if time_series_dim > 100:
-                        raise ValueError("The series must not exceed 100 dimensions")
+                        raise ValueError("The series must not exceed 100 dimensions.")
+                    if avg_pattern_length < 10:
+                        raise ValueError("Average pattern length must be at least 10.")
+                    if avg_pattern_length > time_series_length:
+                        raise ValueError(
+                            f"Average pattern length cannot exceed the length of the time series ({time_series_length}).")
+                    if avg_amplitude <= 0:
+                        raise ValueError("Average amplitude must be greater than 0.")
+                    if default_variance <= 0:
+                        raise ValueError("Default variance must be greater than 0.")
+                    if variance_pattern_length < 10:
+                        raise ValueError("Variance pattern length must be at least 10.")
+                    if variance_pattern_length > time_series_length:
+                        raise ValueError(
+                            f"Variance pattern length cannot exceed the length of the time series ({time_series_length}).")
+                    if variance_amplitude <= 0:
+                        raise ValueError("Variance amplitude must be greater than 0.")
 
                     timestamps, time_series = data_controller.generate_series(
                         time_series_length,
@@ -233,6 +270,7 @@ def init_routes(app):
                 return render_template("ad_analysis.html", plot_html=plot_html, available_series=available_series)
         except ValueError as e:
             error = e
+            print(e)
             return render_template("ad_analysis.html", plot_html=plot_html, available_series=available_series,
                                    error=error)
         return render_template("ad_analysis.html", plot_html=plot_html, available_series=available_series, error=error)
@@ -352,13 +390,29 @@ def init_routes(app):
                     variance_amplitude = float(request.form["variance_amplitude"])
 
                     if time_series_length < 100:
-                        raise ValueError("The time series is too short")
+                        raise ValueError("The time series is too short (should be at least 100).")
                     if time_series_length > 1000000:
-                        raise ValueError("The time series is too long")
+                        raise ValueError("The time series is too long (should not exceed 1,000,000).")
                     if time_series_dim < 1:
-                        raise ValueError("The series must have at least dimension 1")
+                        raise ValueError("The series must have at least dimension 1.")
                     if time_series_dim > 100:
-                        raise ValueError("The series must not have more than 100 dimensions")
+                        raise ValueError("The series must not exceed 100 dimensions.")
+                    if avg_pattern_length < 10:
+                        raise ValueError("Average pattern length must be at least 10.")
+                    if avg_pattern_length > time_series_length:
+                        raise ValueError(
+                            f"Average pattern length cannot exceed the length of the time series ({time_series_length}).")
+                    if avg_amplitude <= 0:
+                        raise ValueError("Average amplitude must be greater than 0.")
+                    if default_variance <= 0:
+                        raise ValueError("Default variance must be greater than 0.")
+                    if variance_pattern_length < 10:
+                        raise ValueError("Variance pattern length must be at least 10.")
+                    if variance_pattern_length > time_series_length:
+                        raise ValueError(
+                            f"Variance pattern length cannot exceed the length of the time series ({time_series_length}).")
+                    if variance_amplitude <= 0:
+                        raise ValueError("Variance amplitude must be greater than 0.")
 
                     timestamps, time_series = data_controller.generate_series(
                         time_series_length,
