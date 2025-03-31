@@ -17,7 +17,6 @@ __pycache__/
 
 # Логи и данные
 *.log
-*.csv
 *.npz
 *.png
 *.jpg
