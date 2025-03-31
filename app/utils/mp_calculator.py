@@ -5,17 +5,29 @@ from dask.distributed import Client
 import numpy as np
 
 
-def generate_mp(algorithm_type, time_series, m):
-    """Вычисляет матричный профиль в зависимости от запроса пользователя и замеряет время выполнения"""
+def generate_mp(
+    algorithm_type: str,
+    time_series: list[list[float]],
+    window_length: int
+) -> tuple[list[np.ndarray], float]:
+    """
+    Вычисляет матричный профиль в зависимости от запроса пользователя и замеряет время выполнения
+    :param algorithm_type: (str) тип алгоритма
+    :param time_series: (list[list[float]]) временной ряд
+    :param window_length: (int) длина окна для вычисления матричного профиля.
+    :return:
+        - result (list[numpy.ndarray]): список массивов с матричным профилем, рассчитанным для каждого ряда.
+        - execution_time (float): Время выполнения алгоритма в секундах.
+    """
     start_time = time.time()
     if algorithm_type == "stomp":
-        result = [matrixProfile.stomp(time_series[0], m)[0]]
+        result = [matrixProfile.stomp(time_series[0], window_length)[0]]
     elif algorithm_type == "scrimp++":
-        result = [matrixProfile.scrimp_plus_plus(np.array(time_series[0]), m)[0]]
+        result = [matrixProfile.scrimp_plus_plus(np.array(time_series[0]), window_length)[0]]
     elif algorithm_type == "stump":
-        result = stumpy.stump(time_series[0], m=m)
+        result = stumpy.stump(np.array(time_series[0]), m=window_length)
     elif algorithm_type == "mstump":
-        result = stumpy.mstump(time_series, m=m)[0]
+        result = stumpy.mstump(np.array(time_series), m=window_length)[0]
     else:
         raise ValueError(f"Неизвестный алгоритм: {algorithm_type}")
 

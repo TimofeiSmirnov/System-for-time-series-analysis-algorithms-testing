@@ -1,11 +1,8 @@
 import argparse
 import os
 from typing import Tuple
-
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-
 from app.algorithms.damp.utils import contains_constant_regions, nextpow2, MASS_V2
 
 
@@ -271,9 +268,25 @@ def DAMP_2_0(
     return left_mp, discord_score, position
 
 
-def damp_algorithm(time_series, threshold_number, arguments=[100, 400]):
-    subsequence_length = arguments[0]
-    location_to_start_processing = arguments[1]
+def damp_algorithm(
+        time_series: np.ndarray,
+        threshold: float,
+        arguments: list[int] = None
+) -> np.ndarray:
+    """
+    Поиск аномалий с помощью алгоритма DAMP.
+    :param time_series: (numpy.ndarray) временной ряд
+    :param threshold: (float) пороговое значение для определения аномальности точки
+    :param arguments: (lift[int] | None) длина окна обучающей выборки алгоритма
+    :return:
+        - anomaly_indices (numpy.ndarray): индексы точек, которые были классифицированы как аномальные
+    """
+    if arguments is None:
+        subsequence_length = 100
+        location_to_start_processing = 400
+    else:
+        subsequence_length = arguments[0]
+        location_to_start_processing = arguments[1]
 
     parser = argparse.ArgumentParser(description="Set parameters")
     parser.add_argument("--subsequence_length", type=int, default=subsequence_length)
@@ -282,11 +295,7 @@ def damp_algorithm(time_series, threshold_number, arguments=[100, 400]):
     parser.add_argument("--lookahead", type=int, default=None)
     parser.add_argument("--enable_output", action="store_true")
     args = parser.parse_args()
-    # Load data
-    # ts = np.loadtxt("data/samples/BourkeStreetMall.txt")
-    # print(ts)
-    print("damp started")
-    # Run DAMP
+
     left_mp, discord_score, position = DAMP_2_0(
         time_series=time_series,
         subsequence_length=args.subsequence_length,
@@ -295,11 +304,8 @@ def damp_algorithm(time_series, threshold_number, arguments=[100, 400]):
         lookahead=args.lookahead,
         enable_output=args.enable_output,
     )
-    print("damp finished")
 
-    # Тут выбираем самые крупные скоры
-    threshold = np.percentile(left_mp, threshold_number)
+    threshold = np.percentile(left_mp, threshold)
     above_threshold = left_mp > threshold
     anomaly_indices = np.where(above_threshold)[0]
-    # print(anomaly_indices)
     return anomaly_indices

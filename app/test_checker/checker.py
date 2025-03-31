@@ -3,15 +3,18 @@ import time
 import numpy as np
 import pandas as pd
 import stumpy
-
 from app.algorithms.damp.damp import damp_algorithm
+from app.algorithms.classic.classic import classic_algorithm
 from app.algorithms.multidim_ad.multidimensional_ad import (multidimensional_ad_post_sorting_for_test,
                                                             multidimensional_ad_pre_sorting_for_test,
                                                             multidimensional_ad_mstump_for_test)
-from app.algorithms.classic.classic import classic_algorithm
 
 
 class Checker:
+    """
+    Класс, производящий тесты алгоритмов AD и CPD.
+    Во время работы подсчитывает все предусмотренные метрики.
+    """
     def __init__(self):
         self.algorithms_ad = {
             "damp": self._damp,
@@ -36,7 +39,14 @@ class Checker:
     def multidimensional_ad_mstump(self, time_series, threshold, window_length, learn_window_length):
         return multidimensional_ad_mstump_for_test(time_series, threshold, window_length)
 
-    def _calculate_metrics_ad(self, file_path, anomaly_indices):
+    def _calculate_metrics_ad(self, file_path: str, anomaly_indices: list[int]) -> dict[str, float]:
+        """
+        Подсчитывает метрики для алгоритма CPD
+        :param file_path: (str) имя файла, для которого необходимо подсчитать метрики
+        :param anomaly_indices: (list[int]) список индексов, оцененных алгоритмом как аномальные
+        :return:
+            - result: (dict[str, float]) словарь с подсчитанными метриками
+        """
         time_series_file = pd.read_csv(file_path)
         anomaly_real_indices = time_series_file["anomaly"].tolist()
         tp, tn, fp, fn = 0, 0, 0, 0
@@ -98,23 +108,39 @@ class Checker:
 
         return result
 
-    def _calculate_metrics_cpd(self, file_path, cpd_indices):
+    def _calculate_metrics_cpd(self, file_path: str, cpd_indices: list[int]) -> dict[str, float]:
+        """
+        Подсчитывает метрики для алгоритма CPD
+        :param file_path: (str) имя файла, для которого необходимо подсчитать метрики
+        :param cpd_indices: (list[int]) список индексов, оцененных алгоритмом как change points (CP)
+        :return:
+            - result: (dict[str, float]) словарь с подсчитанными метриками
+        """
         time_series_file = pd.read_csv(file_path)
+        cpd_indices = sorted(cpd_indices)
         cp_real_indices = time_series_file["Label"].tolist()
-
-        cpd_indices.sort()
 
         real_cp_indices = [i for i, label in enumerate(cp_real_indices) if label == 1]
 
-        predicted_cp_indices = [int(i) for i in cpd_indices if i < len(cp_real_indices)]
+        predicted_cp_indices = [i for i in cpd_indices if i != 0]
 
-        real_cp_indices = real_cp_indices[:len(predicted_cp_indices)]
+        matched_real_cp = []
+        matched_pred_cp = []
 
-        predicted_cp_indices = predicted_cp_indices[:len(real_cp_indices)]
+        for pred in predicted_cp_indices:
+            if not real_cp_indices:
+                break
 
-        absolute_errors = [abs(pred - real) for pred, real in zip(predicted_cp_indices, real_cp_indices)]
+            closest_real = min(real_cp_indices, key=lambda x: abs(x - pred))
+
+            matched_real_cp.append(closest_real)
+            matched_pred_cp.append(pred)
+
+            real_cp_indices.remove(closest_real)
+
+        absolute_errors = [abs(pred - real) for pred, real in zip(matched_pred_cp, matched_real_cp)]
         squared_errors = [error ** 2 for error in absolute_errors]
-        signed_errors = [pred - real for pred, real in zip(predicted_cp_indices, real_cp_indices)]
+        signed_errors = [pred - real for pred, real in zip(matched_pred_cp, matched_real_cp)]
 
         if len(absolute_errors) > 0:
             mae = np.mean(absolute_errors)
@@ -133,8 +159,27 @@ class Checker:
 
         return result
 
-    def check_ad(self, algorithm_type, threshold, window_length, anomaly_part_of_window=0.5, learn_window_length=None):
-        """Тестирование алгоритмов AD по запросу. Возвращаем время и список результатов по метрикам."""
+    def check_ad(
+            self,
+            algorithm_type: str,
+            threshold: float,
+            window_length: int,
+            anomaly_part_of_window: float = 0.5,
+            learn_window_length: int | None = None
+    ) -> tuple[dict[str, float], dict[str, dict[str, float | dict[str, float]]]]:
+        """
+        Тестирование алгоритмов AD с введенными параметрами.
+        Возвращает средние значения метрик по всем обработанным файлам.
+
+        :param algorithm_type: (str) тип алгоритма
+        :param threshold: (float) пороговое значение для определения аномальности точки
+        :param window_length: (int) длина окна алгоритма
+        :param anomaly_part_of_window: (float) доля окна, которая будет считаться аномальной зоной
+        :param learn_window_length: (int | None) длина обучающей выборки в начале ряда для алгоритма DAMP
+        :return:
+            - summarised_results: (dict[str, float]) усреднённые метрики по всем файлам
+            - results: (dict[str, dict[str, float | dict[str, float]]]) словарь с детализированными результатами по каждому файлу
+        """
         if not (algorithm_type in self.algorithms_ad.keys()):
             raise ValueError("Такого алгоритма нет")
 
@@ -166,7 +211,6 @@ class Checker:
             path_to_check = os.path.join(os.path.dirname(__file__), "data", "check_" + data_path_index, file_name)
             try:
                 time_series_file = pd.read_csv(file_path)
-                print("Checking:", file_name)
 
                 time_series_filtered = time_series_file.drop(time_series_file.columns[0], axis=1)
                 time_series = [time_series_filtered[col].map(float).tolist() for col in time_series_filtered]
@@ -183,7 +227,8 @@ class Checker:
 
                 expanded_anomaly_indices = set()
                 for id in anomaly_indices:
-                    expanded_anomaly_indices.update(range(id, id + int(window_length * anomaly_part_of_window) + 1))
+                    for number in range(id, id + int(window_length * anomaly_part_of_window) + 1):
+                        expanded_anomaly_indices.add(number)
                 anomaly_indices = list(expanded_anomaly_indices)
 
                 results[file_name] = {
@@ -194,18 +239,25 @@ class Checker:
                 for metric in results[file_name]["metrics"].keys():
                     summarised_results[metric] += results[file_name]["metrics"][metric]
 
-                print("Finish checking:", file_name)
                 counter_of_files += 1
-            except Exception as e:
-                raise ValueError(f"Не получилось открыть файл {file_name}")
+            except Exception:
+                raise Exception
 
         for metric in summarised_results.keys():
             summarised_results[metric] /= counter_of_files
 
         return summarised_results, results
 
-    def check_cpd(self, window_length):
-        """Тестирование алгоритмов CPD по запросу. Возвращаем время и список результатов по метрикам."""
+    def check_cpd(self, window_length: int) -> tuple[dict[str, float], dict[str, dict[str, float | dict[str, float]]]]:
+        """
+        Тестирование алгоритмов CPD с введенными параметрами.
+        Возвращает средние значения метрик по всем обработанным файлам.
+
+        :param window_length: (int) длина окна алгоритма
+        :return:
+            - summarised_results: (dict[str, float]) усреднённые метрики по всем файлам
+            - results: (dict[str, dict[str, float | dict[str, float]]]) словарь с детализированными результатами по каждому файлу
+        """
         data_path_index = "cpd"
 
         data_path = os.path.join(os.path.dirname(__file__), "data", data_path_index)
@@ -218,7 +270,6 @@ class Checker:
             "Mean Squared Error (MSE)": 0,
             "Mean Signed Difference (MSD)": 0,
             "Root Mean Squared Error (RMSE)": 0,
-            "Normalized RMSE (NRMSE)": 0
         }
 
         for file_name in csv_files:

@@ -4,6 +4,9 @@ import math
 
 
 class TimeSeriesGenerator:
+    """
+    Класс, отвечающий за генерацию временных рядов
+    """
     def __init__(self, n, k, avg_pattern_length=50, avg_amplitude=1, default_variance=0.1,
                  variance_pattern_length=50, variance_amplitude=1, generators=None, include_negatives=False):
         self.n = n

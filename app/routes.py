@@ -20,7 +20,9 @@ def init_routes(app):
 
     @app.route("/matrix_profile", methods=["GET", "POST"])
     def main():
-        """Главная страница с возможностью выбора ряда и генерации матричного профиля по нему"""
+        """
+        Страница для генерации и визуализации матричного профиля
+        """
         plot_html = None
         available_series = data_controller.get_available_series()
         all_algorithms_to_calculate_mp = ["stomp", "stump", "scrimp++", "mstump"]
@@ -114,7 +116,9 @@ def init_routes(app):
 
     @app.route("/ad_analysis", methods=["GET", "POST"])
     def ad_analysis():
-        """Страница для анализа алгоритмов Anomaly Detection (AD)"""
+        """
+        Страница для анализа алгоритмов Anomaly Detection (AD)
+        """
         plot_html = None
         available_series = data_controller.get_available_series()
         timestamps = []
@@ -235,7 +239,9 @@ def init_routes(app):
 
     @app.route("/cpd_analysis", methods=["GET", "POST"])
     def cpd_analysis():
-        """Страница для анализа алгоритмов Change Point Detection (CPD)"""
+        """
+        Страница для анализа алгоритмов Change Point Detection (CPD)
+        """
         plot_html = None
         available_series = data_controller.get_available_series()
         timestamps = []
@@ -320,7 +326,9 @@ def init_routes(app):
 
     @app.route("/multidim_ad_analysis", methods=["GET", "POST"])
     def multidim_ad_analysis():
-        """Страница для анализа алгоритмов Anomaly Detection (AD)"""
+        """
+        Страница для анализа алгоритмов Anomaly Detection (AD)
+        """
         plot_html = None
         available_series = data_controller.get_available_series()
         all_algorithms_for_ad = ["pre_sorting", "post_sorting", "mstump"]
@@ -426,6 +434,9 @@ def init_routes(app):
 
     @app.route("/ad_test", methods=["GET", "POST"])
     def ad_test():
+        """
+        Страница для тестирования алгоритмов AD
+        """
         plot_html = None
         threshold = 99.9
         window_length = 100
@@ -470,6 +481,9 @@ def init_routes(app):
 
     @app.route("/cpd_test", methods=["GET", "POST"])
     def cpd_test():
+        """
+        Страница для тестирования алгоритмов CPD
+        """
         checker = Checker()
         test_results = None
         mean_results = None

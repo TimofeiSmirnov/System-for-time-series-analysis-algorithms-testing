@@ -6,6 +6,9 @@ import numpy as np
 
 
 class ApplyAnomalyDetectionAlgorithms:
+    """
+    Класс для запуска алгоритмов поиска аномалий
+    """
     def __init__(self):
         self.algorithms_1d = {"dumb": self._classic, "damp": self._damp}
         self.algorithms_nd = {"post_sorting": self._post_sorting, "pre_sorting": self._pre_sorting, "mstump": self._mstump}
