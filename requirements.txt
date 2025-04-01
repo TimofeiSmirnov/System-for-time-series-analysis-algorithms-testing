@@ -12,6 +12,4 @@ requests==2.32.3
 stumpy==1.13.0
 Werkzeug==2.3.8
 matplotlib==3.9.2
-flask
-gunicorn
 
