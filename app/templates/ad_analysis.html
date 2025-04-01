@@ -91,7 +91,7 @@
 
         <form id="uploadForm" method="post" enctype="multipart/form-data" style="display: none;" class="mt-3">
             <h3>Upload Your Own Time Series</h3>
-            <label for="file"> The file must be in CSV format with at least 2 columns, the first column representing time points, and the second and subsequent columns representing series values. The series must not contain any missing data.</label>
+            <label for="file"> The file must be in CSV format with at least 2 columns, the first column representing time points, and the second and subsequent columns representing series values. The series must not contain any missing data. If you want to test DAMP, your data should not contain constant regions.</label>
             <input type="file" name="file" id="file" class="form-control" accept=".csv" required>
 
             <label for="algorithm_for_load" class="form-label">Algorithm:</label>
