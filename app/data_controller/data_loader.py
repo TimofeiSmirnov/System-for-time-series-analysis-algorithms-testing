@@ -1,3 +1,6 @@
+# В работе часть кода была взята с репозитория:
+# https://github.com/tirthajyoti/Synthetic-data-gen/blob/master/Notebooks/Synth_Time_series.ipynb
+
 import numpy as np
 import random
 import math

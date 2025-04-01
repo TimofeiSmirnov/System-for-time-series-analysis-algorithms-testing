@@ -1,3 +1,6 @@
+# В работе часть кода была взята с репозитория:
+# https://github.com/sihohan/DAMP
+
 import argparse
 import os
 from typing import Tuple
