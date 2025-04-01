@@ -20,6 +20,14 @@ Flask-приложение для анализа и визуализации в�
    pip install -r requirements.txt
    ```
 
+4. Создайте файл app/config.py со следующим наполнением:
+5. ```bash
+   import os
+   class Config:
+       SECRET_KEY = os.getenv("SECRET_KEY", "dev_secret_key")
+       UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
+   ```
+
 ## Запуск
 1. Запустите приложение:
    ```bash
