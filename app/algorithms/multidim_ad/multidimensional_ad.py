@@ -108,7 +108,7 @@ def multidimensional_ad_pre_sorting_for_test(
     time_series: list[list[float]],
     threshold: float,
     window_length: int
-) -> np.array:
+) -> np.ndarray:
     """
     Поиск аномалий в многомерных временных рядах. Pre-sorting алгоритм для тестирования
 

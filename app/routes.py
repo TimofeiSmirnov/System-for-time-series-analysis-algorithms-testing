@@ -130,7 +130,7 @@ def init_routes(app):
                                                                       file_name)
                 return render_template("index.html", plot_html=plot_html, available_series=available_series,
                                        error=error)
-        except ValueError as e:
+        except Exception as e:
             error = e
             return render_template("index.html", plot_html=plot_html, available_series=available_series, error=error)
         return render_template("index.html", plot_html=plot_html, available_series=available_series, error=error)
@@ -268,7 +268,7 @@ def init_routes(app):
                                                                        [window_length_damp, learn_length_damp])
                 plot_html = visualize_time_series_ad(timestamps, time_series[0], anomaly_indexes, file_name)
                 return render_template("ad_analysis.html", plot_html=plot_html, available_series=available_series)
-        except ValueError as e:
+        except Exception as e:
             error = e
             print(e)
             return render_template("ad_analysis.html", plot_html=plot_html, available_series=available_series,
@@ -356,7 +356,7 @@ def init_routes(app):
                 plot_html = visualize_time_series_with_fluss(timestamps, time_series, arc_curve, file_name)
                 return render_template("cpd_analysis.html", plot_html=plot_html, available_series=available_series,
                                        error=error)
-        except ValueError as e:
+        except Exception as e:
             error = e
             return render_template("cpd_analysis.html", plot_html=plot_html, available_series=available_series,
                                    error=error)
@@ -479,7 +479,7 @@ def init_routes(app):
                                                               file_name)
                 return render_template("multidim_ad_analysis.html", plot_html=plot_html,
                                        available_series=available_series, error=error)
-        except ValueError as e:
+        except Exception as e:
             error = e
             return render_template("multidim_ad_analysis.html", plot_html=plot_html, available_series=available_series,
                                    error=error)

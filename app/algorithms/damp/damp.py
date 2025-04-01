@@ -296,14 +296,18 @@ def damp_algorithm(
     parser.add_argument("--enable_output", action="store_true")
     args = parser.parse_args()
 
-    left_mp, discord_score, position = DAMP_2_0(
-        time_series=time_series,
-        subsequence_length=args.subsequence_length,
-        stride=args.stride,
-        location_to_start_processing=args.location_to_start_processing,
-        lookahead=args.lookahead,
-        enable_output=args.enable_output,
-    )
+    left_mp, discord_score, position = None, None, None
+    try:
+        left_mp, discord_score, position = DAMP_2_0(
+            time_series=time_series,
+            subsequence_length=args.subsequence_length,
+            stride=args.stride,
+            location_to_start_processing=args.location_to_start_processing,
+            lookahead=args.lookahead,
+            enable_output=args.enable_output,
+        )
+    except Exception:
+        raise Exception
 
     threshold = np.percentile(left_mp, threshold)
     above_threshold = left_mp > threshold

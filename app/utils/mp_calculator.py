@@ -28,7 +28,7 @@ def generate_mp(
     elif algorithm_type == "mstump":
         result = stumpy.mstump(np.array(time_series), m=window_length)[0]
     else:
-        raise ValueError(f"Неизвестный алгоритм: {algorithm_type}")
+        raise ValueError(f"Unknown algo: {algorithm_type}")
 
     end_time = time.time()
 
