@@ -236,15 +236,15 @@ def init_routes(app):
                                 raise ValueError("The uploaded series contains missing or NaN values.")
                         df_filtered = loaded_time_series.drop(loaded_time_series.columns[0], axis=1)
                         time_series = [df_filtered[col].tolist() for col in df_filtered.columns]
-
                     if "algorithm_for_load" in request.form and "threshold_for_load" in request.form:
                         algorithm = request.form["algorithm_for_load"]
                         threshold = float(request.form["threshold_for_load"])
                         window_length = int(request.form["m_load"])
 
                         if algorithm == "damp":
-                            window_length_damp = int(request.form["window_length"])
+                            window_length_damp = int(request.form["window_length_damp_load"])
                             learn_length_damp = int(request.form["learn_length_damp_load"])
+
 
                 if algorithm is None:
                     raise ValueError("The matrix profile algorithm must be specified")
