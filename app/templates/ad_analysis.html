@@ -100,12 +100,17 @@
                 <option value="damp">DAMP with Percentile</option>
             </select>
 
+
             <div id="dampFields_load" style="display: none;">
                 <label for="learn_length_damp_load" class="form-label">DAMP training length:</label>
                 <input type="number" name="learn_length_damp_load" id="learn_length_damp_load" class="form-control" min="1" step="1">
-                <label for="window_length_damp_load" class="form-label">DAMP window length:</label>
-                <input type="number" name="window_length_damp_load" id="window_length_damp_load" class="form-control" min="1" step="1">
             </div>
+
+            <label for="m_load" class="form-label">Window length:</label>
+            <input type="number" name="m_load" id="m_load" class="form-control" min="1" step="1">
+
+            <label for="threshold_for_load" class="form-label">Anomaly detection percentile:</label>
+            <input type="number" name="threshold_for_load" id="threshold_for_load" class="form-control" value="99.5" min="0" max="100" step="0.01" required>
 
             <button type="submit" class="btn btn-primary mt-2">Upload</button>
         </form>

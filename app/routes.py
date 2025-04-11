@@ -243,7 +243,7 @@ def init_routes(app):
                         window_length = int(request.form["m_load"])
 
                         if algorithm == "damp":
-                            window_length_damp = int(request.form["window_length_damp_load"])
+                            window_length_damp = int(request.form["window_length"])
                             learn_length_damp = int(request.form["learn_length_damp_load"])
 
                 if algorithm is None:
